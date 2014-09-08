@@ -223,11 +223,17 @@ class SharQ(object):
             job_id
         ]
 
-        self._lua_finish(keys=keys, args=args)
-
         response = {
             'status': 'success'
         }
+
+        finish_response = self._lua_finish(keys=keys, args=args)
+        if finish_response == 0:
+            # the finish failed.
+            response.update({
+                'status': 'failure'
+            })
+
         return response
 
     def requeue(self):

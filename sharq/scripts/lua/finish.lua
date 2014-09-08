@@ -11,7 +11,13 @@
 
 
 -- remove the job from active sorted set.
-redis.call('ZREM', KEYS[1] .. ':' .. KEYS[2] .. ':active', ARGV[1] .. ':' .. ARGV[2])
+local response = redis.call('ZREM', KEYS[1] .. ':' .. KEYS[2] .. ':active', ARGV[1] .. ':' .. ARGV[2])
+if response ~= 1 then
+   -- the job was not found in the active sorted set. Non existent job or
+   -- the job is expired and was requeued back.
+   return 0
+end
+
 -- check if the just-removed job was the last job in the active sorted set.
 if redis.call('EXISTS', KEYS[1] .. ':' .. KEYS[2] .. ':active') ~= 1 then
    -- yes. this was the last job. remove this queue_type
@@ -24,3 +30,5 @@ if redis.call('EXISTS', KEYS[1] .. ':' .. KEYS[2] .. ':' .. ARGV[1]) ~= 1 then
    -- there are no more jobs in this queue. we can safely delete the interval.
    redis.call('HDEL', KEYS[1] .. ':interval', KEYS[2] .. ':' .. ARGV[1])
 end
+
+return 1

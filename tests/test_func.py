@@ -838,7 +838,7 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type
         )
 
-        self.assertEqual(response['status'], 'success')
+        self.assertEqual(response['status'], 'failure')
 
     def test_finish_response_status(self):
         job_id = self._get_job_id()

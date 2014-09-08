@@ -474,13 +474,13 @@ class SharQTest(unittest.TestCase):
         )
 
     def test_finish_all_ok(self):
-        # with a queue_type
+        # with a queue_type. no existent job.
         response = self.queue.finish(
             queue_type=self.valid_queue_type,
             queue_id=self.valid_queue_id,
             job_id=self.valid_job_id
         )
-        self.assertEqual(response['status'], 'success')
+        self.assertEqual(response['status'], 'failure')
         response.pop('status')
 
         # make sure nothing else in response
@@ -492,7 +492,7 @@ class SharQTest(unittest.TestCase):
             queue_id=self.valid_queue_id,
             job_id=self.valid_job_id
         )
-        self.assertEqual(response['status'], 'success')
+        self.assertEqual(response['status'], 'failure')
         response.pop('status')
 
         # make sure nothing else in response
