@@ -311,6 +311,8 @@ class SharQ(object):
             pipe.zrange('%s:%s' % (self._key_prefix, queue_type), 0, -1)
             pipe.zrange('%s:%s:active' % (self._key_prefix, queue_type), 0, -1)
             ready_queues, active_queues = pipe.execute()
+            # extract the queue_ids from the queue_id:job_id string
+            active_queues = [i.split(':')[0] for i in active_queues]
             all_queue_set = set(ready_queues) | set(active_queues)
             response.update({
                 'status': 'success',

@@ -1194,6 +1194,12 @@ class SharQTestCase(unittest.TestCase):
         response = self.queue.metrics(queue_type=self._test_queue_type)
         self.assertEqual(response['queue_ids'], [self._test_queue_id])
 
+        response = self.queue.dequeue(
+            queue_type=self._test_queue_type
+        )
+        response = self.queue.metrics(queue_type=self._test_queue_type)
+        self.assertEqual(response['queue_ids'], [self._test_queue_id])
+
     def test_metrics_response_enqueue_counts_list(self):
         response = self.queue.metrics(
             queue_type=self._test_queue_type, queue_id=self._test_queue_id)
