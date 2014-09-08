@@ -1293,7 +1293,8 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type, queue_id=self._test_queue_id)
         global_response = self.queue.metrics()
         self.assertEqual(response['enqueue_counts'][timestamp_minute], 1)
-        self.assertEqual(global_response['enqueue_counts'][timestamp_minute], 1)
+        self.assertEqual(
+            global_response['enqueue_counts'][timestamp_minute], 1)
 
         # enqueue another job
         job_id = self._get_job_id()
@@ -1309,7 +1310,8 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type, queue_id=self._test_queue_id)
         global_response = self.queue.metrics()
         self.assertEqual(response['enqueue_counts'][timestamp_minute], 2)
-        self.assertEqual(global_response['enqueue_counts'][timestamp_minute], 2)
+        self.assertEqual(
+            global_response['enqueue_counts'][timestamp_minute], 2)
 
         # wait for one minute
         time.sleep(65)  # 65 seconds
@@ -1318,7 +1320,8 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type, queue_id=self._test_queue_id)
         global_response = self.queue.metrics()
         self.assertEqual(response['enqueue_counts'][timestamp_minute], 2)
-        self.assertEqual(global_response['enqueue_counts'][timestamp_minute], 2)
+        self.assertEqual(
+            global_response['enqueue_counts'][timestamp_minute], 2)
 
         # save the old value before overwriting
         old_1_timestamp_minute = timestamp_minute
@@ -1330,7 +1333,8 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type, queue_id=self._test_queue_id)
         global_response = self.queue.metrics()
         self.assertEqual(response['enqueue_counts'][timestamp_minute], 0)
-        self.assertEqual(global_response['enqueue_counts'][timestamp_minute], 0)
+        self.assertEqual(
+            global_response['enqueue_counts'][timestamp_minute], 0)
 
         # enqueue a job in the current minute
         job_id = self._get_job_id()
@@ -1346,8 +1350,10 @@ class SharQTestCase(unittest.TestCase):
         global_response = self.queue.metrics()
         self.assertEqual(response['enqueue_counts'][timestamp_minute], 1)
         self.assertEqual(response['enqueue_counts'][old_1_timestamp_minute], 2)
-        self.assertEqual(global_response['enqueue_counts'][timestamp_minute], 1)
-        self.assertEqual(global_response['enqueue_counts'][old_1_timestamp_minute], 2)
+        self.assertEqual(
+            global_response['enqueue_counts'][timestamp_minute], 1)
+        self.assertEqual(
+            global_response['enqueue_counts'][old_1_timestamp_minute], 2)
 
         time.sleep(65)  # sleep for another 65s
 
@@ -1361,7 +1367,8 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type, queue_id=self._test_queue_id)
         global_response = self.queue.metrics()
         self.assertEqual(response['enqueue_counts'][timestamp_minute], 0)
-        self.assertEqual(global_response['enqueue_counts'][timestamp_minute], 0)
+        self.assertEqual(
+            global_response['enqueue_counts'][timestamp_minute], 0)
 
         # enqueue a job in the current minute
         job_id = self._get_job_id()
@@ -1378,9 +1385,12 @@ class SharQTestCase(unittest.TestCase):
         self.assertEqual(response['enqueue_counts'][timestamp_minute], 1)
         self.assertEqual(response['enqueue_counts'][old_1_timestamp_minute], 2)
         self.assertEqual(response['enqueue_counts'][old_2_timestamp_minute], 1)
-        self.assertEqual(global_response['enqueue_counts'][timestamp_minute], 1)
-        self.assertEqual(global_response['enqueue_counts'][old_1_timestamp_minute], 2)
-        self.assertEqual(global_response['enqueue_counts'][old_2_timestamp_minute], 1)
+        self.assertEqual(
+            global_response['enqueue_counts'][timestamp_minute], 1)
+        self.assertEqual(
+            global_response['enqueue_counts'][old_1_timestamp_minute], 2)
+        self.assertEqual(
+            global_response['enqueue_counts'][old_2_timestamp_minute], 1)
 
     def test_metrics_dequeue_sliding_window(self):
         response = self.queue.metrics(
@@ -1412,7 +1422,8 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type, queue_id=self._test_queue_id)
         global_response = self.queue.metrics()
         self.assertEqual(response['dequeue_counts'][timestamp_minute], 1)
-        self.assertEqual(global_response['dequeue_counts'][timestamp_minute], 1)
+        self.assertEqual(
+            global_response['dequeue_counts'][timestamp_minute], 1)
 
         # enqueue another job
         job_id = self._get_job_id()
@@ -1424,7 +1435,7 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type,
         )
 
-        time.sleep(0.1) # 100ms
+        time.sleep(0.1)  # 100ms
 
         response = self.queue.dequeue(
             queue_type=self._test_queue_type
@@ -1434,7 +1445,8 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type, queue_id=self._test_queue_id)
         global_response = self.queue.metrics()
         self.assertEqual(response['dequeue_counts'][timestamp_minute], 2)
-        self.assertEqual(global_response['dequeue_counts'][timestamp_minute], 2)
+        self.assertEqual(
+            global_response['dequeue_counts'][timestamp_minute], 2)
 
         # wait for one minute
         time.sleep(65)  # 65 seconds
@@ -1443,7 +1455,8 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type, queue_id=self._test_queue_id)
         global_response = self.queue.metrics()
         self.assertEqual(response['dequeue_counts'][timestamp_minute], 2)
-        self.assertEqual(global_response['dequeue_counts'][timestamp_minute], 2)
+        self.assertEqual(
+            global_response['dequeue_counts'][timestamp_minute], 2)
 
         # save the old value before overwriting
         old_1_timestamp_minute = timestamp_minute
@@ -1455,7 +1468,8 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type, queue_id=self._test_queue_id)
         global_response = self.queue.metrics()
         self.assertEqual(response['dequeue_counts'][timestamp_minute], 0)
-        self.assertEqual(global_response['dequeue_counts'][timestamp_minute], 0)
+        self.assertEqual(
+            global_response['dequeue_counts'][timestamp_minute], 0)
 
         # enqueue a job in the current minute
         job_id = self._get_job_id()
@@ -1467,7 +1481,7 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type,
         )
 
-        time.sleep(0.1) # 100ms
+        time.sleep(0.1)  # 100ms
 
         response = self.queue.dequeue(
             queue_type=self._test_queue_type
@@ -1478,8 +1492,10 @@ class SharQTestCase(unittest.TestCase):
         global_response = self.queue.metrics()
         self.assertEqual(response['dequeue_counts'][timestamp_minute], 1)
         self.assertEqual(response['dequeue_counts'][old_1_timestamp_minute], 2)
-        self.assertEqual(global_response['dequeue_counts'][timestamp_minute], 1)
-        self.assertEqual(global_response['dequeue_counts'][old_1_timestamp_minute], 2)
+        self.assertEqual(
+            global_response['dequeue_counts'][timestamp_minute], 1)
+        self.assertEqual(
+            global_response['dequeue_counts'][old_1_timestamp_minute], 2)
 
         time.sleep(65)  # sleep for another 65s
 
@@ -1493,7 +1509,8 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type, queue_id=self._test_queue_id)
         global_response = self.queue.metrics()
         self.assertEqual(response['dequeue_counts'][timestamp_minute], 0)
-        self.assertEqual(global_response['dequeue_counts'][timestamp_minute], 0)
+        self.assertEqual(
+            global_response['dequeue_counts'][timestamp_minute], 0)
 
         # enqueue a job in the current minute
         job_id = self._get_job_id()
@@ -1505,7 +1522,7 @@ class SharQTestCase(unittest.TestCase):
             queue_type=self._test_queue_type,
         )
 
-        time.sleep(0.1) # 100ms
+        time.sleep(0.1)  # 100ms
 
         response = self.queue.dequeue(
             queue_type=self._test_queue_type
@@ -1517,9 +1534,12 @@ class SharQTestCase(unittest.TestCase):
         self.assertEqual(response['dequeue_counts'][timestamp_minute], 1)
         self.assertEqual(response['dequeue_counts'][old_1_timestamp_minute], 2)
         self.assertEqual(response['dequeue_counts'][old_2_timestamp_minute], 1)
-        self.assertEqual(global_response['dequeue_counts'][timestamp_minute], 1)
-        self.assertEqual(global_response['dequeue_counts'][old_1_timestamp_minute], 2)
-        self.assertEqual(global_response['dequeue_counts'][old_2_timestamp_minute], 1)
+        self.assertEqual(
+            global_response['dequeue_counts'][timestamp_minute], 1)
+        self.assertEqual(
+            global_response['dequeue_counts'][old_1_timestamp_minute], 2)
+        self.assertEqual(
+            global_response['dequeue_counts'][old_2_timestamp_minute], 1)
 
     def test_sharq_rate_limiting(self):
         job_id_1 = self._get_job_id()
