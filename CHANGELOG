@@ -1,0 +1,4 @@
+MINOR RELESE v0.1.1
+	- Fixes a bug in metrics queue_id list API.
+	- Return failure when a finish is sent to an
+	  non existent job.
