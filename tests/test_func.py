@@ -11,7 +11,6 @@ from sharq.utils import generate_epoch
 
 
 class SharQTestCase(unittest.TestCase):
-
     """
     `SharQTestCase` contains the functional test cases
     that validate the correctness of all the APIs exposed
@@ -1139,6 +1138,59 @@ class SharQTestCase(unittest.TestCase):
         queue_type_active_set = self.queue._r.smembers(
             '%s:active:queue_type' % self.queue._key_prefix)
         self.assertEqual(len(queue_type_active_set), 0)
+
+    def test_interval_non_existent_queue(self):
+        response = self.queue.interval(
+            interval=1000,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type
+        )
+        self.assertEqual(response['status'], 'failure')
+
+        interval_map_name = '%s:interval' % (self.queue._key_prefix)
+        # check if interval map exists
+        self.assertFalse(self.queue._r.exists(interval_map_name))
+
+    def test_interval_existent_queue(self):
+        job_id = self._get_job_id()
+        response = self.queue.enqueue(
+            payload=self._test_payload_1,
+            interval=10000,  # 10s (10000ms)
+            job_id=job_id,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type,
+        )
+
+        # check if interval is saved in the appropriate structure
+        interval_map_name = '%s:interval' % (self.queue._key_prefix)
+        # check if interval map exists
+        self.assertTrue(self.queue._r.exists(interval_map_name))
+
+        # check the value
+        interval_map_key = '%s:%s' % (
+            self._test_queue_type, self._test_queue_id)
+        interval = self.queue._r.hget(interval_map_name, interval_map_key)
+        self.assertEqual(interval, '10000')
+
+        # set the interval to 5s (5000ms)
+        response = self.queue.interval(
+            interval=5000,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type
+        )
+        self.assertEqual(response['status'], 'success')
+
+        # check if interval is saved in the appropriate structure
+        interval_map_name = '%s:interval' % (self.queue._key_prefix)
+        # check if interval map exists
+        self.assertTrue(self.queue._r.exists(interval_map_name))
+
+        # check the value
+        # check the value
+        interval_map_key = '%s:%s' % (
+            self._test_queue_type, self._test_queue_id)
+        interval = self.queue._r.hget(interval_map_name, interval_map_key)
+        self.assertEqual(interval, '5000')
 
     def test_metrics_response_status(self):
         response = self.queue.metrics()

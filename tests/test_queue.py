@@ -499,6 +499,152 @@ class SharQTest(unittest.TestCase):
         # except the above key / value pairs
         self.assertEqual(response, {})
 
+    def test_interval_interval_invalid(self):
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`interval` has an invalid value.',
+            self.queue.interval,
+            interval=self.invalid_interval_1,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type
+        )
+
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`interval` has an invalid value.',
+            self.queue.interval,
+            interval=self.invalid_interval_2,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type
+        )
+
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`interval` has an invalid value.',
+            self.queue.interval,
+            interval=self.invalid_interval_3,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type
+        )
+
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`interval` has an invalid value.',
+            self.queue.interval,
+            interval=self.invalid_interval_4,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type
+        )
+
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`interval` has an invalid value.',
+            self.queue.interval,
+            interval=self.invalid_interval_5,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type
+        )
+
+    def test_interval_interval_missing(self):
+        self.assertRaises(
+            TypeError,
+            self.queue.interval,
+            # interval parameter missing
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type
+        )
+
+    def test_interval_invalid_queue_id(self):
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_id` has an invalid value.',
+            self.queue.interval,
+            interval=self.valid_interval,
+            queue_id=self.invalid_queue_id_1,
+            queue_type=self.valid_queue_type
+        )
+
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_id` has an invalid value.',
+            self.queue.interval,
+            interval=self.valid_interval,
+            queue_id=self.invalid_queue_id_2,
+            queue_type=self.valid_queue_type
+        )
+
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_id` has an invalid value.',
+            self.queue.interval,
+            interval=self.valid_interval,
+            queue_id=self.invalid_queue_id_3,
+            queue_type=self.valid_queue_type
+        )
+
+    def test_interval_queue_id_missing(self):
+        self.assertRaises(
+            TypeError,
+            self.queue.interval,
+            interval=self.valid_interval,
+            # queue_id parameter missing
+            queue_type=self.valid_queue_type
+        )
+
+    def test_interval_invalid_queue_type(self):
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_type` has an invalid value.',
+            self.queue.interval,
+            interval=self.valid_interval,
+            queue_id=self.valid_queue_id,
+            queue_type=self.invalid_queue_type_1
+        )
+
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_type` has an invalid value.',
+            self.queue.interval,
+            interval=self.valid_interval,
+            queue_id=self.valid_queue_id,
+            queue_type=self.invalid_queue_type_2
+        )
+
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_type` has an invalid value.',
+            self.queue.interval,
+            interval=self.valid_interval,
+            queue_id=self.valid_queue_id,
+            queue_type=self.invalid_queue_type_3
+        )
+
+    def test_interval_all_ok(self):
+        # with a queue_type
+        response = self.queue.interval(
+            interval=self.valid_interval,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type
+        )
+        # no queues are found yet.
+        self.assertEqual(response['status'], 'failure')
+
+        # the result should contain only status
+        response.pop('status')
+        self.assertEqual(response, {})
+
+        # without a queue_type
+        response = self.queue.interval(
+            interval=self.valid_interval,
+            queue_id=self.valid_queue_id
+        )
+        # no queues are found yet.
+        self.assertEqual(response['status'], 'failure')
+
+        # the result should contain only status
+        response.pop('status')
+        self.assertEqual(response, {})
+
     def test_metrics_no_argument(self):
         # with no arguments
         response = self.queue.metrics()

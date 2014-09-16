@@ -12,7 +12,6 @@ from sharq.exceptions import SharqException, BadArgumentException
 
 
 class SharQ(object):
-
     """The SharQ object is the core of this queue.
     SharQ does the following.
 
@@ -96,6 +95,13 @@ class SharQ(object):
                 'finish.lua'), 'r') as finish_file:
             self._lua_finish_script = finish_file.read()
             self._lua_finish = self._r.register_script(self._lua_finish_script)
+
+        with open(os.path.join(
+                lua_script_path,
+                'interval.lua'), 'r') as interval_file:
+            self._lua_interval_script = interval_file.read()
+            self._lua_interval = self._r.register_script(
+                self._lua_interval_script)
 
         with open(os.path.join(
                 lua_script_path,
@@ -236,6 +242,44 @@ class SharQ(object):
 
         return response
 
+    def interval(self, interval, queue_id, queue_type='default'):
+        """Updates the interval for a specific queue_id
+        of a particular queue type.
+        """
+        # validate all the input
+        if not is_valid_interval(interval):
+            raise BadArgumentException('`interval` has an invalid value.')
+
+        if not is_valid_identifier(queue_id):
+            raise BadArgumentException('`queue_id` has an invalid value.')
+
+        if not is_valid_identifier(queue_type):
+            raise BadArgumentException('`queue_type` has an invalid value.')
+
+        # generate the interval key
+        interval_hmap_key = '%s:interval' % self._key_prefix
+        interval_queue_key = '%s:%s' % (queue_type, queue_id)
+        keys = [
+            interval_hmap_key,
+            interval_queue_key
+        ]
+
+        args = [
+            interval
+        ]
+        interval_response = self._lua_interval(keys=keys, args=args)
+        if interval_response == 0:
+            # the queue with the id and type does not exist.
+            response = {
+                'status': 'failure'
+            }
+        else:
+            response = {
+                'status': 'success'
+            }
+
+        return response
+
     def requeue(self):
         """Re-queues any expired job (one which does not get an expire
         before the job_expiry_interval) back into their respective queue.
@@ -294,14 +338,17 @@ class SharQ(object):
                 timestamp
             ]
 
-            enqueue_details, dequeue_details = self._lua_metrics(keys=keys, args=args)
+            enqueue_details, dequeue_details = self._lua_metrics(
+                keys=keys, args=args)
 
             enqueue_counts = {}
             dequeue_counts = {}
             # the length of enqueue & dequeue details are always same.
             for i in xrange(0, len(enqueue_details), 2):
-                enqueue_counts[str(enqueue_details[i])] = int(enqueue_details[i+1] or 0)
-                dequeue_counts[str(dequeue_details[i])] = int(dequeue_details[i+1] or 0)
+                enqueue_counts[str(enqueue_details[i])] = int(
+                    enqueue_details[i + 1] or 0)
+                dequeue_counts[str(dequeue_details[i])] = int(
+                    dequeue_details[i + 1] or 0)
 
             response.update({
                 'status': 'success',
@@ -341,14 +388,17 @@ class SharQ(object):
                 timestamp
             ]
 
-            enqueue_details, dequeue_details = self._lua_metrics(keys=keys, args=args)
+            enqueue_details, dequeue_details = self._lua_metrics(
+                keys=keys, args=args)
 
             enqueue_counts = {}
             dequeue_counts = {}
             # the length of enqueue & dequeue details are always same.
             for i in xrange(0, len(enqueue_details), 2):
-                enqueue_counts[str(enqueue_details[i])] = int(enqueue_details[i+1] or 0)
-                dequeue_counts[str(dequeue_details[i])] = int(dequeue_details[i+1] or 0)
+                enqueue_counts[str(enqueue_details[i])] = int(
+                    enqueue_details[i + 1] or 0)
+                dequeue_counts[str(dequeue_details[i])] = int(
+                    dequeue_details[i + 1] or 0)
 
             # get the queue length for the job queue
             queue_length = self._r.llen('%s:%s:%s' % (
@@ -362,6 +412,7 @@ class SharQ(object):
             })
             return response
         elif not queue_type and queue_id:
-            raise BadArgumentException('`queue_id` should be accompanied by `queue_type`.')
+            raise BadArgumentException(
+                '`queue_id` should be accompanied by `queue_type`.')
 
         return response
