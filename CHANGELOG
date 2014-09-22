@@ -1,4 +1,8 @@
-MINOR RELESE v0.1.1
+MAJOR RELEASE v0.2.0
+	- Adds a new interval API to change the queue
+	  interval on the fly.
+
+MINOR RELEASE v0.1.1
 	- Fixes a bug in metrics queue_id list API.
 	- Return failure when a finish is sent to an
 	  non existent job.
