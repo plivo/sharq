@@ -9,6 +9,7 @@
 --     ARGV[3] - <job_id>
 --     ARGV[4] - <serialized_payload>
 --     ARGV[5] - <interval>
+--     ARGV[6] - <requeue_limit>
 -- output:
 --     nil
 
@@ -21,6 +22,9 @@ redis.call('HSET', KEYS[1] .. ':payload', KEYS[2] .. ':' .. ARGV[2] .. ':' .. AR
 
 -- update the interval map.
 redis.call('HSET', KEYS[1] .. ':interval', KEYS[2] .. ':' .. ARGV[2], ARGV[5])
+
+-- update the requeue limit map.
+redis.call('HSET', KEYS[1] .. ':' .. KEYS[2] .. ':' .. ARGV[2] .. ':requeues_remaining', ARGV[3], ARGV[6])
 
 -- check if the queue of this job is already present in the ready sorted set.
 if not redis.call('ZRANK', KEYS[1] .. ':' .. KEYS[2], ARGV[2]) then

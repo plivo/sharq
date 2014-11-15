@@ -34,6 +34,9 @@ class SharQTestCase(unittest.TestCase):
             'to': '1000000001',
             'message': 'Hello, SharQ'
         }
+        self._test_requeue_limit_5 = 5
+        self._test_requeue_limit_neg_1 = -1
+        self._test_requeue_limit_0 = 0
 
     def _get_job_id(self):
         """Generates a uuid4 and returns the string
@@ -172,6 +175,88 @@ class SharQTestCase(unittest.TestCase):
         interval = self.queue._r.hget(
             interval_map_name, interval_map_key)
         self.assertEqual(interval, '10000')  # 10s (10000ms)
+
+    def test_enqueue_requeue_limit_map_existence(self):
+        job_id = self._get_job_id()
+        response = self.queue.enqueue(
+            payload=self._test_payload_1,
+            interval=10000,  # 10s (10000ms)
+            job_id=job_id,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type
+            # without a requeue limit parameter
+        )
+
+        # check if requeue limit is saved in the appropriate structure
+        requeue_limit_map_name = '%s:%s:%s:requeues_remaining' % (
+            self.queue._key_prefix,
+            self._test_queue_type,
+            self._test_queue_id,
+        )
+        # check if requeue limit  map exists
+        self.assertTrue(self.queue._r.exists(requeue_limit_map_name))
+
+        job_id = self._get_job_id()
+        response = self.queue.enqueue(
+            payload=self._test_payload_1,
+            interval=10000,  # 10s (10000ms)
+            job_id=job_id,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type,
+            requeue_limit=self._test_requeue_limit_5
+        )
+
+        # check if requeue limit is saved in the appropriate structure
+        requeue_limit_map_name = '%s:%s:%s:requeues_remaining' % (
+            self.queue._key_prefix,
+            self._test_queue_type,
+            self._test_queue_id,
+        )
+        # check if requeue limit  map exists
+        self.assertTrue(self.queue._r.exists(requeue_limit_map_name))
+
+    def test_enqueue_requeue_limit_value(self):
+        # without requeue limit (but reading from the config)
+        job_id = self._get_job_id()
+        response = self.queue.enqueue(
+            payload=self._test_payload_1,
+            interval=10000,  # 10s (10000ms)
+            job_id=job_id,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type
+            # without requeue limit.
+        )
+
+        # check if requeue limit is saved in the appropriate structure
+        requeue_limit_map_name = '%s:%s:%s:requeues_remaining' % (
+            self.queue._key_prefix,
+            self._test_queue_type,
+            self._test_queue_id,
+        )
+        requeues_remaining = self.queue._r.hget(
+            requeue_limit_map_name, job_id)
+        self.assertEqual(requeues_remaining, '-1')  # from the config file.
+
+        # with requeue limit in the enqueue function.
+        job_id = self._get_job_id()
+        response = self.queue.enqueue(
+            payload=self._test_payload_1,
+            interval=10000,  # 10s (10000ms)
+            job_id=job_id,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type,
+            requeue_limit=self._test_requeue_limit_5
+        )
+
+        # check if requeue limit is saved in the appropriate structure
+        requeue_limit_map_name = '%s:%s:%s:requeues_remaining' % (
+            self.queue._key_prefix,
+            self._test_queue_type,
+            self._test_queue_id,
+        )
+        requeues_remaining = self.queue._r.hget(
+            requeue_limit_map_name, job_id)
+        self.assertEqual(requeues_remaining, '5') # 5 retries remaining.
 
     def test_enqueue_ready_set(self):
         job_id = self._get_job_id()
@@ -607,7 +692,7 @@ class SharQTestCase(unittest.TestCase):
 
         self.assertEqual(response['status'], 'failure')
 
-    def test_dequeue_response_status_success(self):
+    def test_dequeue_response_status_success_without_requeue_limit(self):
         job_id = self._get_job_id()
         response = self.queue.enqueue(
             payload=self._test_payload_1,
@@ -615,6 +700,7 @@ class SharQTestCase(unittest.TestCase):
             job_id=job_id,
             queue_id=self._test_queue_id,
             queue_type=self._test_queue_type,
+            # without requeue limit
         )
 
         # dequeue from the queue_type
@@ -627,6 +713,32 @@ class SharQTestCase(unittest.TestCase):
         self.assertEqual(response['queue_id'], self._test_queue_id)
         self.assertEqual(response['job_id'], job_id)
         self.assertEqual(response['payload'], self._test_payload_1)
+        self.assertEqual(response['requeues_remaining'], -1)  # from the config
+
+    def test_dequeue_response_status_success_with_requeue_limit(self):
+        # with requeue limit passed explicitly
+        job_id = self._get_job_id()
+        response = self.queue.enqueue(
+            payload=self._test_payload_1,
+            interval=10000,  # 10s (10000ms)
+            job_id=job_id,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type,
+            requeue_limit=self._test_requeue_limit_5
+        )
+
+        # dequeue from the queue_type
+        response = self.queue.dequeue(
+            queue_type=self._test_queue_type
+        )
+
+        # check all the responses
+        self.assertEqual(response['status'], 'success')
+        self.assertEqual(response['queue_id'], self._test_queue_id)
+        self.assertEqual(response['job_id'], job_id)
+        self.assertEqual(response['payload'], self._test_payload_1)
+        self.assertEqual(
+            response['requeues_remaining'], self._test_requeue_limit_5)
 
     def test_dequeue_job_queue_existence(self):
         job_id = self._get_job_id()
@@ -960,6 +1072,35 @@ class SharQTestCase(unittest.TestCase):
         self.assertFalse(
             self.queue._r.exists('%s:interval' % self.queue._key_prefix))
 
+    def test_finish_requeue_limit_existence(self):
+        job_id = self._get_job_id()
+        response = self.queue.enqueue(
+            payload=self._test_payload_1,
+            interval=10000,  # 10s (10000ms)
+            job_id=job_id,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type,
+            requeue_limit=self._test_requeue_limit_0
+        )
+
+        # dequeue from the queue_type
+        response = self.queue.dequeue(
+            queue_type=self._test_queue_type
+        )
+
+        # mark the job as finished
+        response = self.queue.finish(
+            job_id=job_id,
+            queue_id=response['queue_id'],
+            queue_type=self._test_queue_type
+        )
+
+        self.assertFalse(
+            self.queue._r.exists('%s:%s:%s:requeues_remaining' % (
+                self.queue._key_prefix, self._test_queue_type, self._test_queue_id
+            ))
+        )
+
     def test_finish_job_queue_existence(self):
         job_id = self._get_job_id()
         response = self.queue.enqueue(
@@ -1138,6 +1279,152 @@ class SharQTestCase(unittest.TestCase):
         queue_type_active_set = self.queue._r.smembers(
             '%s:active:queue_type' % self.queue._key_prefix)
         self.assertEqual(len(queue_type_active_set), 0)
+
+    def test_requeue_requeue_limit_5(self):
+        # with requeue limit as 5
+        job_id = self._get_job_id()
+        response = self.queue.enqueue(
+            payload=self._test_payload_1,
+            interval=10000,  # 10s (10000ms)
+            job_id=job_id,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type,
+            requeue_limit=self._test_requeue_limit_5
+        )
+
+        # dequeue from the queue_type
+        response = self.queue.dequeue(
+            queue_type=self._test_queue_type
+        )
+        self.assertEqual(
+            response['requeues_remaining'], self._test_requeue_limit_5)
+
+        # wait until the job expires
+        time.sleep(self.queue._job_expire_interval / 1000.00)
+
+        # requeue the job
+        self.queue.requeue()
+
+        # dequeue from the queue_type
+        response = self.queue.dequeue(
+            queue_type=self._test_queue_type
+        )
+        self.assertEqual(
+            response['requeues_remaining'], self._test_requeue_limit_5 - 1)
+
+        # wait until the job expires
+        time.sleep(self.queue._job_expire_interval / 1000.00)
+
+        # requeue the job
+        self.queue.requeue()
+
+        # dequeue from the queue_type
+        response = self.queue.dequeue(
+            queue_type=self._test_queue_type
+        )
+        self.assertEqual(
+            response['requeues_remaining'], self._test_requeue_limit_5 - 2)
+
+    def test_requeue_requeue_limit_0(self):
+        # with requeue limit as 0
+        job_id = self._get_job_id()
+        response = self.queue.enqueue(
+            payload=self._test_payload_1,
+            interval=10000,  # 10s (10000ms)
+            job_id=job_id,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type,
+            requeue_limit=self._test_requeue_limit_0
+        )
+
+        # dequeue from the queue_type
+        response = self.queue.dequeue(
+            queue_type=self._test_queue_type
+        )
+        self.assertEqual(
+            response['requeues_remaining'], self._test_requeue_limit_0)
+
+        # wait until the job expires
+        time.sleep(self.queue._job_expire_interval / 1000.00)
+
+        # requeue the job
+        self.queue.requeue()
+
+        # dequeue from the queue_type
+        response = self.queue.dequeue(
+            queue_type=self._test_queue_type
+        )
+        self.assertEqual(response['status'], 'failure')
+
+    def test_requeue_requeue_limit_neg_1(self):
+        # with requeue limit as -1 (requeue infinitely)
+        job_id = self._get_job_id()
+        response = self.queue.enqueue(
+            payload=self._test_payload_1,
+            interval=10000,  # 10s (10000ms)
+            job_id=job_id,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type,
+            requeue_limit=self._test_requeue_limit_neg_1
+        )
+
+        # dequeue from the queue_type
+        response = self.queue.dequeue(
+            queue_type=self._test_queue_type
+        )
+        self.assertEqual(
+            response['requeues_remaining'], self._test_requeue_limit_neg_1)
+
+        # wait until the job expires
+        time.sleep(self.queue._job_expire_interval / 1000.00)
+
+        # requeue the job
+        self.queue.requeue()
+
+        # dequeue from the queue_type
+        response = self.queue.dequeue(
+            queue_type=self._test_queue_type
+        )
+        self.assertEqual(
+            response['requeues_remaining'], self._test_requeue_limit_neg_1)
+
+        # wait until the job expires
+        time.sleep(self.queue._job_expire_interval / 1000.00)
+
+        # requeue the job
+        self.queue.requeue()
+
+        # dequeue from the queue_type
+        response = self.queue.dequeue(
+            queue_type=self._test_queue_type
+        )
+        self.assertEqual(
+            response['requeues_remaining'], self._test_requeue_limit_neg_1)
+
+        # wait until the job expires
+        time.sleep(self.queue._job_expire_interval / 1000.00)
+
+        # requeue the job
+        self.queue.requeue()
+
+        # dequeue from the queue_type
+        response = self.queue.dequeue(
+            queue_type=self._test_queue_type
+        )
+        self.assertEqual(
+            response['requeues_remaining'], self._test_requeue_limit_neg_1)
+
+        # wait until the job expires
+        time.sleep(self.queue._job_expire_interval / 1000.00)
+
+        # requeue the job
+        self.queue.requeue()
+
+        self.assertEqual(
+            response['requeues_remaining'], self._test_requeue_limit_neg_1)
+
+        # wait until the job expires
+        time.sleep(self.queue._job_expire_interval / 1000.00)
 
     def test_interval_non_existent_queue(self):
         response = self.queue.interval(

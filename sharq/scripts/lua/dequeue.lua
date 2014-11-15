@@ -7,7 +7,7 @@
 --     ARGV[1] - <current_timestamp>
 --     ARGV[2] - <job_expiry_interval>
 -- output:
---     { queue_id, job_id, payload }
+--     { queue_id, job_id, payload, requeues_remaining }
 
 
 local ready_queue_id_list = redis.call('ZRANGEBYSCORE', KEYS[1] .. ':' .. KEYS[2], 0, ARGV[1])
@@ -43,6 +43,9 @@ if next(ready_queue_id_list) ~= nil then
    -- add the queue_type to metrics active queue type set.
    redis.call('SADD', KEYS[1] .. ':active:queue_type', KEYS[2])
 
+   -- get the requeues_remaining for this job
+   local requeues_remaining = redis.call('HGET', KEYS[1] .. ':' .. KEYS[2] .. ':' .. ready_queue_id .. ':requeues_remaining', job_id)
+
    -- update the metrics counters
    -- update global counter.
    local timestamp_minute = math.floor(ARGV[1]/60000) * 60000 -- get the epoch for the minute
@@ -66,7 +69,7 @@ if next(ready_queue_id_list) ~= nil then
       redis.call('INCR', KEYS[1] .. ':' .. KEYS[2] .. ':' .. ready_queue_id .. ':dequeue_counter:' .. timestamp_minute)
    end
 
-   return { ready_queue_id, job_id, payload }
+   return { ready_queue_id, job_id, payload, requeues_remaining }
 else
    return { }
 end

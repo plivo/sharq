@@ -39,6 +39,14 @@ class SharQTest(unittest.TestCase):
         self.invalid_interval_4 = 0
         self.invalid_interval_5 = -1
 
+        self.valid_requeue_limit_1 = 5
+        self.valid_requeue_limit_2 = 0
+        self.valid_requeue_limit_3 = -1
+        self.invalid_requeue_limit_1 = '100'
+        self.invalid_requeue_limit_2 = '$#'
+        self.invalid_requeue_limit_3 = ''
+        self.invalid_requeue_limit_4 = -2
+
         self.valid_payload = {
             'phone_number': '1000000000',
             'message': 'hello world'
@@ -245,6 +253,59 @@ class SharQTest(unittest.TestCase):
             queue_type=self.valid_queue_type
         )
 
+    def test_enqueue_requeue_limit_invalid(self):
+        # type 1
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`requeue_limit` has an invalid value.',
+            self.queue.enqueue,
+            payload=self.valid_payload,
+            interval=self.valid_interval,
+            job_id=self.valid_job_id,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type,
+            requeue_limit=self.invalid_requeue_limit_1
+        )
+
+        # type 2
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`requeue_limit` has an invalid value.',
+            self.queue.enqueue,
+            payload=self.valid_payload,
+            interval=self.valid_interval,
+            job_id=self.valid_job_id,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type,
+            requeue_limit=self.invalid_requeue_limit_2
+        )
+
+        # type 3
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`requeue_limit` has an invalid value.',
+            self.queue.enqueue,
+            payload=self.valid_payload,
+            interval=self.valid_interval,
+            job_id=self.valid_job_id,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type,
+            requeue_limit=self.invalid_requeue_limit_3
+        )
+
+        # type 4
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`requeue_limit` has an invalid value.',
+            self.queue.enqueue,
+            payload=self.valid_payload,
+            interval=self.valid_interval,
+            job_id=self.valid_job_id,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type,
+            requeue_limit=self.invalid_requeue_limit_4
+        )
+
     def test_enqueue_cannot_serialize_payload(self):
         self.assertRaisesRegexp(
             BadArgumentException,
@@ -284,6 +345,66 @@ class SharQTest(unittest.TestCase):
         # the result should contain only status
         response.pop('status')
         self.assertEqual(response, {})
+
+        # with requeue_limit 1
+        response = self.queue.enqueue(
+            payload=self.valid_payload,
+            interval=self.valid_interval,
+            job_id=self.valid_job_id,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type,
+            requeue_limit=self.valid_requeue_limit_1
+        )
+        self.assertEqual(response['status'], 'queued')
+
+        # the result should contain only status
+        response.pop('status')
+        self.assertEqual(response, {})
+
+        # with requeue_limit 2
+        response = self.queue.enqueue(
+            payload=self.valid_payload,
+            interval=self.valid_interval,
+            job_id=self.valid_job_id,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type,
+            requeue_limit=self.valid_requeue_limit_2
+        )
+        self.assertEqual(response['status'], 'queued')
+
+        # the result should contain only status
+        response.pop('status')
+        self.assertEqual(response, {})
+
+        # with requeue_limit 3
+        response = self.queue.enqueue(
+            payload=self.valid_payload,
+            interval=self.valid_interval,
+            job_id=self.valid_job_id,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type,
+            requeue_limit=self.valid_requeue_limit_3
+        )
+        self.assertEqual(response['status'], 'queued')
+
+        # the result should contain only status
+        response.pop('status')
+        self.assertEqual(response, {})
+
+        # requeue_limit missing
+        response = self.queue.enqueue(
+            payload=self.valid_payload,
+            interval=self.valid_interval,
+            job_id=self.valid_job_id,
+            queue_id=self.valid_queue_id,
+            queue_type=self.valid_queue_type
+        )
+        self.assertEqual(response['status'], 'queued')
+
+        # the result should contain only status
+        response.pop('status')
+        self.assertEqual(response, {})
+
 
     def test_dequeue_queue_type_invalid(self):
         # type 1
@@ -339,6 +460,10 @@ class SharQTest(unittest.TestCase):
         self.assertIn('job_id', response)
         response.pop('job_id')
 
+        # check if it has a key called 'requeues_remaining'
+        self.assertIn('requeues_remaining', response)
+        response.pop('requeues_remaining')
+
         # make sure nothing else in response
         # except the above key / value pairs
         self.assertEqual(response, {})
@@ -367,6 +492,10 @@ class SharQTest(unittest.TestCase):
         # check if it has a key called 'job_id'
         self.assertIn('job_id', response)
         response.pop('job_id')
+
+        # check if it has a key called 'requeues_remaining'
+        self.assertIn('requeues_remaining', response)
+        response.pop('requeues_remaining')
 
         # make sure nothing else in response
         # except the above key / value pairs

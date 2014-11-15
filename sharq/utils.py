@@ -41,6 +41,20 @@ def is_valid_interval(interval):
     return True
 
 
+def is_valid_requeue_limit(requeue_limit):
+    """Checks if the given requeue limit is valid.
+    A valid requeue limit is always greater than
+    or equal to -1.
+    """
+    if not isinstance(requeue_limit, (int, long)):
+        return False
+
+    if requeue_limit <= -2:
+        return False
+
+    return True
+
+
 def serialize_payload(payload):
     """Tries to serialize the payload using msgpack. If it is
     not serializable, raises a TypeError.
