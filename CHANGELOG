@@ -1,3 +1,7 @@
+MAJOR RELEASE v0.3.0
+	- Adds the requeue limit feature which bounds
+	  the job retries in SHARQ.
+
 MAJOR RELEASE v0.2.0
 	- Adds a new interval API to change the queue
 	  interval on the fly.

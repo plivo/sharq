@@ -1,7 +1,7 @@
 SharQ
 =======
 
-SharQ is an rate limited API queueing system built using [Redis](http://redis.io). SharQ is the core library that powers the [SharQ Server](https://github.com/plivo/sharq-server).
+SharQ is a flexible rate limited queueing system built using [Redis](http://redis.io). SharQ is the core library that powers the [SharQ Server](https://github.com/plivo/sharq-server).
 
 ## Installation
 
@@ -16,18 +16,19 @@ pip install sharq
 Sample SharQ Config file.
 ```
 [sharq]
-job_expire_interval  : 5000 ; in milliseconds
-job_requeue_interval : 5000 ; in milliseconds
+job_expire_interval       : 1000 ; in milliseconds
+job_requeue_interval      : 1000 ; in milliseconds
+default_job_requeue_limit : -1 ; retries infinitely
 
 [redis]
-db                   : 0
-key_prefix           : sharq
-conn_type            : unix_sock ; or tcp_sock
+db                        : 0
+key_prefix                : sharq_server
+conn_type                 : tcp_sock ; or unix_sock
 ;; unix connection settings
-unix_socket_path     : /tmp/redis.sock
+unix_socket_path          : /tmp/redis.sock
 ;; tcp connection settings
-port                 : 6379
-host                 : 127.0.0.1
+port                      : 6379
+host                      : 127.0.0.1
 ```
 
 __Note:__ Uncomment the following lines in your `redis.conf` if you are using unix socket to connect to Redis.
