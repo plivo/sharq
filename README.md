@@ -1,7 +1,7 @@
 SharQ
 =======
 
-SharQ is an rate limited API queueing system built using [Redis](http://redis.io). ShaQ is the core library that powers the [SharQ Server](https://github.com/plivo/sharq-server).
+SharQ is an rate limited API queueing system built using [Redis](http://redis.io). SharQ is the core library that powers the [SharQ Server](https://github.com/plivo/sharq-server).
 
 ## Installation
 
