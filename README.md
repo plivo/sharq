@@ -29,7 +29,7 @@ unix_socket_path          : /tmp/redis.sock
 ;; tcp connection settings
 port                      : 6379
 host                      : 127.0.0.1
-```
+```M
 
 __Note:__ Uncomment the following lines in your `redis.conf` if you are using unix socket to connect to Redis.
 ```
@@ -117,7 +117,7 @@ Updates the interval for a specified queue on the fly. The interval specifies th
 {'status': 'success'}
 ```
 
-### Merics
+### Metrics
 
 Gets the SharQ metrics like,
 
