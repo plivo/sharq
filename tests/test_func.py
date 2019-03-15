@@ -37,6 +37,8 @@ class SharQTestCase(unittest.TestCase):
         self._test_requeue_limit_5 = 5
         self._test_requeue_limit_neg_1 = -1
         self._test_requeue_limit_0 = 0
+        self._test2_queue_id = 'thetourist'
+        self._test2_queue_type = 'package'
 
     def _get_job_id(self):
         """Generates a uuid4 and returns the string
@@ -1932,6 +1934,79 @@ class SharQTestCase(unittest.TestCase):
         self.assertEqual(response['queue_id'], self._test_queue_id)
         self.assertEqual(response['job_id'], job_id_2)
         self.assertEqual(response['payload'], self._test_payload_2)
+
+    def test_clear_queue_without_purge(self):
+        job_id = self._get_job_id()
+        queue_response = self.queue.enqueue(
+            payload=self._test_payload_1,
+            interval=10000,  # 10s (10000ms)
+            job_id=job_id,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type,
+        )
+        queue_clear_response = self.queue.clear_queue(
+            queue_type=self._test_queue_type,
+            queue_id=self._test_queue_id)
+        # check the responses
+        self.assertEqual(queue_clear_response['status'], 'success')
+        self.assertEqual(queue_clear_response['message'], 'successfully removed all queued calls')
+        #check in redis
+        job_queue_list = '%s:%s:%s' % (self.queue._key_prefix, 
+                            self._test_queue_type, self._test_queue_id)
+        primary_set = '%s:%s'% (self.queue._key_prefix, self._test_queue_type)
+        primary_sorted_key = self.queue._r.zrange(primary_set, 0, -1)
+        self.assertNotIn(self._test_queue_id, primary_sorted_key)
+        self.assertFalse(self.queue._r.exists(job_queue_list))          
+    
+    def test_clear_queue_with_purge(self):
+        job_id = self._get_job_id()
+        queue_response = self.queue.enqueue(
+            payload=self._test_payload_1,
+            interval=10000,  # 10s (10000ms)
+            job_id=job_id,
+            queue_id=self._test_queue_id,
+            queue_type=self._test_queue_type,
+        )
+        queue_clear_response = self.queue.clear_queue(
+            queue_type=self._test_queue_type,
+            queue_id=self._test_queue_id,
+            purge_all=True)
+        #check the responses
+        self.assertEqual(queue_clear_response['status'], 'success')
+        self.assertEqual(queue_clear_response['message'], 
+                    'successfully removed all queued calls and purged related resources') 
+        #check in the redis if resource is removed 
+        job_queue_list = '%s:%s:%s' % (self.queue._key_prefix, 
+                            self._test_queue_type, self._test_queue_id)
+        primary_set = '%s:%s'% (self.queue._key_prefix, self._test_queue_type)
+        payload_hashset = '%s:payload' % (self.queue._key_prefix)
+        job_payload_key = '%s:%s:%s' % (self._test_queue_type, self._test_queue_id, job_id)
+        interval_set = '%s:interval' % (self.queue._key_prefix)
+        job_interval_key = '%s:%s' % (self._test_queue_type, self._test_queue_id)
+        primary_sorted_key = self.queue._r.zrange(primary_set, 0, -1)
+        self.assertNotIn(self._test_queue_id, primary_sorted_key)
+        self.assertFalse(self.queue._r.hexists(payload_hashset, job_payload_key))
+        self.assertFalse(self.queue._r.hexists(interval_set, job_interval_key))
+        self.assertFalse(self.queue._r.exists(job_queue_list))
+    
+    def test_clear_queue_with_non_existing_queue_id(self):
+        queue_clear_response = self.queue.clear_queue(
+            queue_type=self._test2_queue_type,
+            queue_id=self._test2_queue_id)
+        #check the responses
+        self.assertEqual(queue_clear_response['status'], 'failure')
+        self.assertEqual(queue_clear_response['message'], 
+                    'No queued calls found')
+
+    def test_clear_queue_with_non_existing_queue_id_with_purge(self):
+        queue_clear_response = self.queue.clear_queue(
+            queue_type=self._test2_queue_type,
+            queue_id=self._test2_queue_id,
+            purge_all=True)
+        #check the responses
+        self.assertEqual(queue_clear_response['status'], 'failure')
+        self.assertEqual(queue_clear_response['message'], 
+                    'No queued calls found')
 
     def tearDown(self):
         # flush all the keys in the test db after each test
