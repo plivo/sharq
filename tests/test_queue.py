@@ -309,7 +309,7 @@ class SharQTest(unittest.TestCase):
     def test_enqueue_cannot_serialize_payload(self):
         self.assertRaisesRegexp(
             BadArgumentException,
-            r'can\'t serialize.',
+            r'can not serialize.',
             self.queue.enqueue,
             payload=self.invalid_payload,
             interval=self.valid_interval,
@@ -883,6 +883,80 @@ class SharQTest(unittest.TestCase):
             self.queue.metrics,
             queue_type=self.invalid_queue_type_3,
             queue_id=self.valid_queue_id
+        )
+
+    def test_clear_queue_invalid_queue_type(self):
+        # type 1
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_type` has an invalid value.',
+            self.queue.clear_queue,
+            queue_type=self.invalid_queue_type_1,
+            queue_id=self.valid_queue_id
+        )
+
+        # type 2
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_type` has an invalid value.',
+            self.queue.clear_queue,
+            queue_type=self.invalid_queue_type_2,
+            queue_id=self.valid_queue_id
+        )
+
+        # type 3
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_type` has an invalid value.',
+            self.queue.clear_queue,
+            queue_type=self.invalid_queue_type_3,
+            queue_id=self.valid_queue_id
+        )
+
+        # type 4
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_type` has an invalid value.',
+            self.queue.clear_queue,
+            queue_type=None,
+            queue_id=self.valid_queue_id
+        )
+
+    def test_clear_queue_invalid_queue_id_(self):
+        # type 1
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_id` has an invalid value.',
+            self.queue.clear_queue,
+            queue_id=self.invalid_queue_id_1,
+            queue_type=self.valid_queue_type
+        )
+
+        # type 2
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_id` has an invalid value.',
+            self.queue.clear_queue,
+            queue_id=self.invalid_queue_id_2,
+            queue_type=self.valid_queue_type
+        )
+
+        # type 3
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_id` has an invalid value.',
+            self.queue.clear_queue,
+            queue_id=self.invalid_queue_id_3,
+            queue_type=self.valid_queue_type
+        )
+
+        # type 3
+        self.assertRaisesRegexp(
+            BadArgumentException,
+            '`queue_id` has an invalid value.',
+            self.queue.clear_queue,
+            queue_id=None,
+            queue_type=self.valid_queue_type
         )
 
     def tearDown(self):
