@@ -452,15 +452,15 @@ class SharQ(object):
             raise BadArgumentException('`queue_type` has an invalid value.')
 
         response = {
-            'status': 'Failure',
+            'status': 'failure',
             'message': 'No queued calls found'
             }
         # remove from the primary sorted set
         primary_set = '{}:{}'.format(self._key_prefix, queue_type)
         queued_status = self._r.zrem(primary_set, queue_id)
         if queued_status:
-            response.update({'status': 'Success', 
-                    'message': 'Successfully removed all queued calls'})
+            response.update({'status': 'success',
+                    'message': 'successfully removed all queued calls'})
         # do a full cleanup of reources
         # although this is not necessary as we don't remove resources 
         # while dequeue operation
@@ -482,8 +482,8 @@ class SharQ(object):
             # clear job_queue_list
             pipe.delete(job_queue_list)
             pipe.execute()
-            response.update({'status': 'Success', 
-                    'message': 'Successfully removed all queued calls and purged related resources'})
+            response.update({'status': 'success',
+                    'message': 'successfully removed all queued calls and purged related resources'})
         else:
             # always delete the job queue list
             self._r.delete(job_queue_list)

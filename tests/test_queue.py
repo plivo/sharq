@@ -309,7 +309,7 @@ class SharQTest(unittest.TestCase):
     def test_enqueue_cannot_serialize_payload(self):
         self.assertRaisesRegexp(
             BadArgumentException,
-            r'can not serialize.',
+            r'can\'t serialize',
             self.queue.enqueue,
             payload=self.invalid_payload,
             interval=self.valid_interval,
