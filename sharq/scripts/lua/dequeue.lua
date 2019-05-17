@@ -16,10 +16,21 @@ if next(ready_queue_id_list) ~= nil then
    local ready_queue_id = ready_queue_id_list[1]
    -- dequeue a job from the job queue.
    local job_id = redis.call('LPOP', KEYS[1] .. ':' .. KEYS[2] .. ':' .. ready_queue_id)
+   if job_id == nil then
+	   return { }
+   end
    -- get the payload for this job
    local payload = redis.call('HGET', KEYS[1] .. ':payload', KEYS[2] .. ':' .. ready_queue_id .. ':' .. job_id)
+   -- finish inside requeue operation has raced and removed this
+   if payload == nil then
+	   return { }
+   end
    -- update the time keeper with the current dequeue time.
    local interval = redis.call('HGET', KEYS[1] .. ':interval', KEYS[2] .. ':' .. ready_queue_id)
+   -- finish inside requeue operation has raced and removed this
+   if interval == nil then
+	   interval = 0
+   end
    redis.call('PSETEX', KEYS[1] .. ':' .. KEYS[2] .. ':' .. ready_queue_id .. ':time', ARGV[2], ARGV[1])
    -- check if there are any more jobs of this queue in the job queue.
    if redis.call('LLEN', KEYS[1] .. ':' .. KEYS[2] .. ':' .. ready_queue_id) == 0 then
@@ -45,6 +56,10 @@ if next(ready_queue_id_list) ~= nil then
 
    -- get the requeues_remaining for this job
    local requeues_remaining = redis.call('HGET', KEYS[1] .. ':' .. KEYS[2] .. ':' .. ready_queue_id .. ':requeues_remaining', job_id)
+   -- finish inside requeue operation has raced and removed this
+   if requeues_remaining == nil then
+	   return { }
+   end
 
    -- update the metrics counters
    -- update global counter.
