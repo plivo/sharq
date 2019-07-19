@@ -53,7 +53,7 @@ class SharQ(object):
                 unix_socket_path=self._config.get('redis', 'unix_socket_path')
             )
         elif redis_connection_type == 'tcp_sock':
-            if self._config.get("clustered_mode"):
+            if self._config.getboolean('redis', 'clustered'):
                 startup_nodes = [{"host":self._config.get('redis', 'host'), "port":self._config.get('redis', 'port')}]
                 self._r = StrictRedisCluster(startup_nodes=startup_nodes, decode_responses=True,skip_full_coverage_check=True)
             else:
