@@ -18,6 +18,7 @@ setup(
     install_requires=[
         'redis==2.10.1',
         'msgpack-python==0.4.2'
+        'rediscluster=0.5.3'
     ],
     classifiers = [
         'Development Status :: 5 - Production/Stable',
