@@ -5,6 +5,7 @@ import sys
 import signal
 import ConfigParser
 import redis
+from rediscluster import StrictRedisCluster
 from sharq.utils import (is_valid_identifier, is_valid_interval,
                          is_valid_requeue_limit, generate_epoch,
                          serialize_payload, deserialize_payload)
@@ -52,12 +53,15 @@ class SharQ(object):
                 unix_socket_path=self._config.get('redis', 'unix_socket_path')
             )
         elif redis_connection_type == 'tcp_sock':
-            self._r = redis.StrictRedis(
-                db=db,
-                host=self._config.get('redis', 'host'),
-                port=self._config.get('redis', 'port')
-            )
-
+            if self._config.getboolean('redis', 'clustered', fallback=False):
+                startup_nodes = [{"host":self._config.get('redis', 'host'), "port":self._config.get('redis', 'port')}]
+                self._r = StrictRedisCluster(startup_nodes=startup_nodes, decode_responses=True, skip_full_coverage_check=True)
+            else:
+                self._r = redis.StrictRedis(
+                    db=db,
+                    host=self._config.get('redis', 'host'),
+                    port=self._config.get('redis', 'port')
+                )
         self._load_lua_scripts()
 
     def _load_config(self):
