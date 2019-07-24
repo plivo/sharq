@@ -12,9 +12,10 @@ setup(
     package_data={
         'sharq': ['scripts/lua/*.lua']
     },
-    license=open('LICENSE.txt').read(),
+    license="The MIT License (MIT)",
     description='An API queueing system built at Plivo.',
     long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     install_requires=[
         'msgpack-python==0.4.2',
         'redis-py-cluster'>='1.3.6'
