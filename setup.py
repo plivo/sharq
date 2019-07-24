@@ -16,9 +16,8 @@ setup(
     description='An API queueing system built at Plivo.',
     long_description=open('README.md').read(),
     install_requires=[
-        'redis==2.10.1',
         'msgpack-python==0.4.2',
-        'rediscluster>=0.5.3'
+        'redis-py-cluster'>='1.3.6'
     ],
     classifiers = [
         'Development Status :: 5 - Production/Stable',
