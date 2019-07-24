@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='SharQ',
-    version='0.5.0',
+    version='0.5.1',
     url='https://github.com/plivo/sharq',
     author='Plivo Team',
     author_email='hello@plivo.com',
@@ -17,9 +17,8 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     install_requires=[
-        'redis==2.10.1',
         'msgpack-python==0.4.2',
-        'rediscluster>=0.5.3'
+        'redis-py-cluster'=='1.3.6'
     ],
     classifiers = [
         'Development Status :: 5 - Production/Stable',
