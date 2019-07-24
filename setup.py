@@ -18,7 +18,7 @@ setup(
     long_description_content_type='text/markdown',
     install_requires=[
         'msgpack-python==0.4.2',
-        'redis-py-cluster'>='1.3.6'
+        'redis-py-cluster'=='1.3.6'
     ],
     classifiers = [
         'Development Status :: 5 - Production/Stable',
