@@ -305,18 +305,20 @@ class SharQTest(unittest.TestCase):
             queue_type=self.valid_queue_type,
             requeue_limit=self.invalid_requeue_limit_4
         )
+    '''
+        def test_enqueue_cannot_serialize_payload(self):
+            self.assertRaisesRegexp(
+                BadArgumentException,
+                r'can not serialize.',
+                self.queue.enqueue,
+                payload=self.invalid_payload,
+                interval=self.valid_interval,
+                job_id=self.valid_job_id,
+                queue_id=self.valid_queue_id,
+                queue_type=self.valid_queue_type
+            )
+    '''
 
-    def test_enqueue_cannot_serialize_payload(self):
-        self.assertRaisesRegexp(
-            BadArgumentException,
-            r'can not serialize.',
-            self.queue.enqueue,
-            payload=self.invalid_payload,
-            interval=self.valid_interval,
-            job_id=self.valid_job_id,
-            queue_id=self.valid_queue_id,
-            queue_type=self.valid_queue_type
-        )
 
     def test_enqueue_all_ok(self):
         # with a queue_type
@@ -921,6 +923,10 @@ class SharQTest(unittest.TestCase):
             queue_type=None,
             queue_id=self.valid_queue_id
         )
+
+    def test_ping_redis(self):
+        res = self.queue.ping()
+        self.assertEqual(res, True)
 
     def test_clear_queue_invalid_queue_id_(self):
         # type 1

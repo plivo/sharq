@@ -446,6 +446,9 @@ class SharQ(object):
                 '`queue_id` should be accompanied by `queue_type`.')
 
         return response
+
+    def ping(self):
+        return self._r.ping()
     
     def clear_queue(self, queue_type=None, queue_id=None, purge_all=False):
         """clear the all entries in queue with particular queue_id
