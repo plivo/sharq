@@ -448,6 +448,10 @@ class SharQ(object):
         return response
 
     def ping(self):
+        """
+        To check the availability of redis. If redis is down ping will throw exception
+        :return: True
+        """
         return self._r.ping()
     
     def clear_queue(self, queue_type=None, queue_id=None, purge_all=False):
