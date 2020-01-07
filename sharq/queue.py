@@ -59,7 +59,7 @@ class SharQ(object):
                 
             if isclustered:
                 startup_nodes = [{"host":self._config.get('redis', 'host'), "port":self._config.get('redis', 'port')}]
-                self._r = StrictRedisCluster(startup_nodes=startup_nodes, decode_responses=True, skip_full_coverage_check=True)
+                self._r = StrictRedisCluster(startup_nodes=startup_nodes, decode_responses=False, skip_full_coverage_check=True)
             else:
                 self._r = redis.StrictRedis(
                     db=db,
