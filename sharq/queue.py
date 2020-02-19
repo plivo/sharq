@@ -59,7 +59,7 @@ class SharQ(object):
                 
             if isclustered:
                 startup_nodes = [{"host":self._config.get('redis', 'host'), "port":self._config.get('redis', 'port')}]
-                self._r = StrictRedisCluster(startup_nodes=startup_nodes, decode_responses=True, skip_full_coverage_check=True)
+                self._r = StrictRedisCluster(startup_nodes=startup_nodes, decode_responses=False, skip_full_coverage_check=True)
             else:
                 self._r = redis.StrictRedis(
                     db=db,
@@ -446,6 +446,13 @@ class SharQ(object):
                 '`queue_id` should be accompanied by `queue_type`.')
 
         return response
+
+    def ping(self):
+        """
+        To check the availability of redis. If redis is down ping will throw exception
+        :return: True
+        """
+        return self._r.ping()
     
     def clear_queue(self, queue_type=None, queue_id=None, purge_all=False):
         """clear the all entries in queue with particular queue_id

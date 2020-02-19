@@ -922,6 +922,10 @@ class SharQTest(unittest.TestCase):
             queue_id=self.valid_queue_id
         )
 
+    def test_ping_redis(self):
+        res = self.queue.ping()
+        self.assertEqual(res, True)
+
     def test_clear_queue_invalid_queue_id_(self):
         # type 1
         self.assertRaisesRegexp(
