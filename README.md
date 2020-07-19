@@ -117,7 +117,7 @@ Updates the interval for a specified queue on the fly. The interval specifies th
 {'status': 'success'}
 ```
 
-### Merics
+### Metrics
 
 Gets the SharQ metrics like,
 
