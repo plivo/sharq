@@ -5,7 +5,7 @@ import sys
 import signal
 import ConfigParser
 import redis
-from rediscluster import StrictRedisCluster
+from rediscluster import RedisCluster as StrictRedisCluster
 from sharq.utils import (is_valid_identifier, is_valid_interval,
                          is_valid_requeue_limit, generate_epoch,
                          serialize_payload, deserialize_payload)
