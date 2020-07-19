@@ -1,3 +1,6 @@
+MINOR RELEASE v0.5.3
+	- Upgrade redis cluster dependency
+
 MAJOR RELEASE v0.5.0
 	- Adds support for Redis Cluster mode in TCP socket mode only
 
