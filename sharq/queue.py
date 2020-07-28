@@ -5,7 +5,7 @@ import sys
 import signal
 import ConfigParser
 import redis
-from rediscluster import StrictRedisCluster
+from rediscluster import RedisCluster as StrictRedisCluster
 from sharq.utils import (is_valid_identifier, is_valid_interval,
                          is_valid_requeue_limit, generate_epoch,
                          serialize_payload, deserialize_payload)
@@ -59,7 +59,8 @@ class SharQ(object):
                 
             if isclustered:
                 startup_nodes = [{"host":self._config.get('redis', 'host'), "port":self._config.get('redis', 'port')}]
-                self._r = StrictRedisCluster(startup_nodes=startup_nodes, decode_responses=False, skip_full_coverage_check=True)
+                self._r = StrictRedisCluster(startup_nodes=startup_nodes, decode_responses=False,
+                                             skip_full_coverage_check=True, socket_timeout=5)
             else:
                 self._r = redis.StrictRedis(
                     db=db,
@@ -447,12 +448,12 @@ class SharQ(object):
 
         return response
 
-    def ping(self):
+    def deep_status(self):
         """
-        To check the availability of redis. If redis is down ping will throw exception
-        :return: True
+        To check the availability of redis. If redis is down get will throw exception
+        :return: value or None
         """
-        return self._r.ping()
+        return self._r.get('sharq:deep_status:{}'.format(self._key_prefix))
     
     def clear_queue(self, queue_type=None, queue_id=None, purge_all=False):
         """clear the all entries in queue with particular queue_id
