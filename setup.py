@@ -17,7 +17,7 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     install_requires=[
-        'msgpack==1.0.0',
+        'msgpack-python==0.5.6',
         'redis-py-cluster==2.0.0'
     ],
     classifiers = [
