@@ -71,7 +71,7 @@ class SharQ(object):
 
     def _load_config(self):
         """Read the configuration file and load it into memory."""
-        self._config = configparser.Safeconfigparser()
+        self._config = configparser.SafeConfigParser()
         self._config.read(self.config_path)
 
     def reload_config(self, config_path=None):
