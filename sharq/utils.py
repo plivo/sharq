@@ -18,7 +18,7 @@ def is_valid_identifier(identifier):
         - _ (underscore)
         - - (hypen)
     """
-    if not isinstance(identifier, basestring):
+    if not isinstance(identifier, str):
         return False
 
     if len(identifier) > 100 or len(identifier) < 1:
@@ -32,7 +32,7 @@ def is_valid_interval(interval):
     """Checks if the given interval is valid. A valid interval
     is always a positive, non-zero integer value.
     """
-    if not isinstance(interval, (int, long)):
+    if not isinstance(interval, int):
         return False
 
     if interval <= 0:
@@ -46,7 +46,7 @@ def is_valid_requeue_limit(requeue_limit):
     A valid requeue limit is always greater than
     or equal to -1.
     """
-    if not isinstance(requeue_limit, (int, long)):
+    if not isinstance(requeue_limit, int):
         return False
 
     if requeue_limit <= -2:
