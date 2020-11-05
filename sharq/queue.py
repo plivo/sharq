@@ -3,7 +3,7 @@
 import os
 import sys
 import signal
-import ConfigParser
+import configparser
 import redis
 from rediscluster import RedisCluster as StrictRedisCluster
 from sharq.utils import (is_valid_identifier, is_valid_interval,
@@ -71,7 +71,7 @@ class SharQ(object):
 
     def _load_config(self):
         """Read the configuration file and load it into memory."""
-        self._config = ConfigParser.SafeConfigParser()
+        self._config = configparser.Safeconfigparser()
         self._config.read(self.config_path)
 
     def reload_config(self, config_path=None):
