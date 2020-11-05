@@ -1,4 +1,4 @@
 argparse==1.2.1
-msgpack==0.6.1
+msgpack==1.0.0
 wsgiref==0.1.2
 redis-py-cluster==2.0.0
