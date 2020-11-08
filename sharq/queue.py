@@ -206,6 +206,7 @@ class SharQ(object):
         ]
 
         dequeue_response = self._lua_dequeue(keys=keys, args=args)
+        print("sharqvarshit::", dequeue_response)
 
         if len(dequeue_response) < 4:
             response = {
@@ -214,6 +215,7 @@ class SharQ(object):
             return response
 
         queue_id, job_id, payload, requeues_remaining = dequeue_response
+        print("sharqvarshit::", payload)
         payload = deserialize_payload(payload[1:-1])
 
         response = {
