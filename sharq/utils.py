@@ -59,13 +59,13 @@ def serialize_payload(payload):
     """Tries to serialize the payload using msgpack. If it is
     not serializable, raises a TypeError.
     """
-    return msgpack.packb(payload)
+    return msgpack.packb(payload, use_bin_type=True)
 
 
 def deserialize_payload(payload):
     """Tries to deserialize the payload using msgpack.
     """
-    return msgpack.unpackb(payload)
+    return msgpack.unpackb(payload, raw=False)
 
 
 def generate_epoch():
