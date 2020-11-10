@@ -215,16 +215,14 @@ class SharQ(object):
 
         queue_id, job_id, payload, requeues_remaining = dequeue_response
         payload = deserialize_payload(payload)
-        print("sharqvarshit::payload", payload)
 
         response = {
             'status': 'success',
-            'queue_id': queue_id.decode('utf-8'),
-            'job_id': job_id.decode('utf-8'),
+            'queue_id': queue_id,
+            'job_id': job_id,
             'payload': payload,
             'requeues_remaining': int(requeues_remaining)
         }
-        print("sharqvarshit::response", response)
 
         return response
 
