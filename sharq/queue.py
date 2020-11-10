@@ -218,8 +218,8 @@ class SharQ(object):
 
         response = {
             'status': 'success',
-            'queue_id': queue_id,
-            'job_id': job_id,
+            'queue_id': queue_id.decode('utf-8'),
+            'job_id': job_id.decode('utf-8'),
             'payload': payload,
             'requeues_remaining': int(requeues_remaining)
         }
