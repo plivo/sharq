@@ -398,6 +398,13 @@ class SharQ(object):
             # extract the queue_ids from the queue_id:job_id string
             active_queues = [i.decode('utf-8').split(':')[0] for i in active_queues]
             all_queue_set = set(ready_queues) | set(active_queues)
+            queue_list = []
+            for queue in list(all_queue_set):
+                try:
+                    queue_list.append(queue.decode('utf-8'))
+                except Exception as e:
+                    queue_list.append(queue)
+                    pass
             response.update({
                 'status': 'success',
                 'queue_ids': list(all_queue_set)
