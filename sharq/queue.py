@@ -375,7 +375,7 @@ class SharQ(object):
             enqueue_counts = {}
             dequeue_counts = {}
             # the length of enqueue & dequeue details are always same.
-            for i in xrange(0, len(enqueue_details), 2):
+            for i in range(0, len(enqueue_details), 2):
                 enqueue_counts[str(enqueue_details[i])] = int(
                     enqueue_details[i + 1] or 0)
                 dequeue_counts[str(dequeue_details[i])] = int(
@@ -396,7 +396,7 @@ class SharQ(object):
             pipe.zrange('%s:%s:active' % (self._key_prefix, queue_type), 0, -1)
             ready_queues, active_queues = pipe.execute()
             # extract the queue_ids from the queue_id:job_id string
-            active_queues = [i.split(':')[0] for i in active_queues]
+            active_queues = [i.decode('utf-8').split(':')[0] for i in active_queues]
             all_queue_set = set(ready_queues) | set(active_queues)
             response.update({
                 'status': 'success',
@@ -425,7 +425,7 @@ class SharQ(object):
             enqueue_counts = {}
             dequeue_counts = {}
             # the length of enqueue & dequeue details are always same.
-            for i in xrange(0, len(enqueue_details), 2):
+            for i in range(0, len(enqueue_details), 2):
                 enqueue_counts[str(enqueue_details[i])] = int(
                     enqueue_details[i + 1] or 0)
                 dequeue_counts[str(dequeue_details[i])] = int(
