@@ -8,7 +8,8 @@ import redis
 from rediscluster import RedisCluster as StrictRedisCluster
 from sharq.utils import (is_valid_identifier, is_valid_interval,
                          is_valid_requeue_limit, generate_epoch,
-                         serialize_payload, deserialize_payload)
+                         serialize_payload, deserialize_payload,
+                         convert_to_str)
 from sharq.exceptions import SharqException, BadArgumentException
 
 
@@ -53,12 +54,12 @@ class SharQ(object):
                 unix_socket_path=self._config.get('redis', 'unix_socket_path')
             )
         elif redis_connection_type == 'tcp_sock':
-            isclustered = False    
+            isclustered = False
             if self._config.has_option('redis', 'clustered'):
                 isclustered = self._config.getboolean('redis', 'clustered')
-                
+
             if isclustered:
-                startup_nodes = [{"host":self._config.get('redis', 'host'), "port":self._config.get('redis', 'port')}]
+                startup_nodes = [{"host": self._config.get('redis', 'host'), "port": self._config.get('redis', 'port')}]
                 self._r = StrictRedisCluster(startup_nodes=startup_nodes, decode_responses=False,
                                              skip_full_coverage_check=True, socket_timeout=5)
             else:
@@ -360,6 +361,7 @@ class SharQ(object):
             ready_queue_types = self._r.smembers(
                 '%s:ready:queue_type' % self._key_prefix)
             all_queue_types = active_queue_types | ready_queue_types
+            queue_types = convert_to_str(all_queue_types)
             # global rates for past 10 minutes
             timestamp = str(generate_epoch())
             keys = [
@@ -383,7 +385,7 @@ class SharQ(object):
 
             response.update({
                 'status': 'success',
-                'queue_types': list(all_queue_types),
+                'queue_types': queue_types,
                 'enqueue_counts': enqueue_counts,
                 'dequeue_counts': dequeue_counts
             })
@@ -398,16 +400,10 @@ class SharQ(object):
             # extract the queue_ids from the queue_id:job_id string
             active_queues = [i.decode('utf-8').split(':')[0] for i in active_queues]
             all_queue_set = set(ready_queues) | set(active_queues)
-            queue_list = []
-            for queue in list(all_queue_set):
-                try:
-                    queue_list.append(queue.decode('utf-8'))
-                except Exception as e:
-                    queue_list.append(queue)
-                    pass
+            queue_list = convert_to_str(all_queue_set)
             response.update({
                 'status': 'success',
-                'queue_ids': list(all_queue_set)
+                'queue_ids': queue_list
             })
             return response
         elif queue_type and queue_id:
@@ -461,7 +457,7 @@ class SharQ(object):
         :return: value or None
         """
         return self._r.get('sharq:deep_status:{}'.format(self._key_prefix))
-    
+
     def clear_queue(self, queue_type=None, queue_id=None, purge_all=False):
         """clear the all entries in queue with particular queue_id
         and queue_type. It takes an optional argument, 
@@ -477,13 +473,13 @@ class SharQ(object):
         response = {
             'status': 'Failure',
             'message': 'No queued calls found'
-            }
+        }
         # remove from the primary sorted set
         primary_set = '{}:{}'.format(self._key_prefix, queue_type)
         queued_status = self._r.zrem(primary_set, queue_id)
         if queued_status:
-            response.update({'status': 'Success', 
-                    'message': 'Successfully removed all queued calls'})
+            response.update({'status': 'Success',
+                             'message': 'Successfully removed all queued calls'})
         # do a full cleanup of reources
         # although this is not necessary as we don't remove resources 
         # while dequeue operation
@@ -505,8 +501,8 @@ class SharQ(object):
             # clear job_queue_list
             pipe.delete(job_queue_list)
             pipe.execute()
-            response.update({'status': 'Success', 
-                    'message': 'Successfully removed all queued calls and purged related resources'})
+            response.update({'status': 'Success',
+                             'message': 'Successfully removed all queued calls and purged related resources'})
         else:
             # always delete the job queue list
             self._r.delete(job_queue_list)

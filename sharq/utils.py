@@ -72,3 +72,15 @@ def generate_epoch():
     """Generates an unix epoch in ms.
     """
     return int(time.time() * 1000)
+
+
+def convert_to_str(queue_set):
+    """Takes set and decodes bytes to string"""
+    queue_list = []
+    for queue in list(queue_set):
+        try:
+            queue_list.append(queue.decode('utf-8'))
+        except Exception as e:
+            queue_list.append(queue)
+            pass
+    return queue_list
