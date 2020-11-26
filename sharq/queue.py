@@ -217,7 +217,10 @@ class SharQ(object):
             return response
 
         queue_id, job_id, payload, requeues_remaining = dequeue_response
+        print("SHARQLOGS::Dequeuing from redis", queue_id, job_id, payload, requeues_remaining)
+        print("SHARQLOGS::Deserializing payload")
         payload = deserialize_payload(payload)
+        print("SHARQLOGS::Deserialized payload")
 
         response = {
             'status': 'success',
