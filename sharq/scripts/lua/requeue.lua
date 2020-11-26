@@ -22,7 +22,7 @@ for _, job in pairs(requeue_job_list) do
    local queue_id, job_id = job:match("([^,]+):([^,]+)")
    -- check if the job has any pending requeues.
    local requeues_remaining = redis.call('HGET', prefix .. ':' .. queue_type .. ':' .. queue_id .. ':requeues_remaining', job_id)
-   if tonumber(requeues_remaining) > -1 then
+   if requeues_remaining and tonumber(requeues_remaining) > -1 then
       -- finite requeues_remaining. decrement by one and check.
       requeues_remaining = requeues_remaining - 1
       -- update the new requeues_remaining value.
@@ -40,16 +40,16 @@ for _, job in pairs(requeue_job_list) do
        redis.call('LPUSH', job_queue_key, job_id)
        -- check if this is the only job in the job queue
        if redis.call('LLEN', job_queue_key) == 1 then
+	  -- default when time keeper does not exist. next ready time is now.
+	  local next_ready_time = current_timestamp
 	  -- check if the time keeper exists
-	  local next_ready_time = 0
 	  if redis.call('EXISTS', prefix .. ':' .. queue_type .. ':' .. queue_id .. ':time') == 1 then
-	     local last_dequeue_time = redis.call('GET', prefix .. ':' .. queue_type .. ':' .. queue_id .. ':time')
-	     local interval = redis.call('HGET', prefix .. ':interval', queue_type .. ':' .. queue_id)
+	     local last_dequeue_time = tonumber(redis.call('GET', prefix .. ':' .. queue_type .. ':' .. queue_id .. ':time'))
+	     local interval = tonumber(redis.call('HGET', prefix .. ':interval', queue_type .. ':' .. queue_id))
 	     -- compute next ready time
-	     next_ready_time = last_dequeue_time + interval
-	  else
-	     -- time keeper does not exist. next ready time is now.
-	     next_ready_time = current_timestamp
+	     if last_dequeue_time and interval then
+		next_ready_time = last_dequeue_time + interval
+	     end
 	  end
 	  -- insert this queue into the ready sorted set.
 	  redis.call('ZADD', prefix .. ':' .. queue_type, next_ready_time, queue_id)

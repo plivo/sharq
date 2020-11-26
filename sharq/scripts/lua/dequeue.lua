@@ -26,7 +26,6 @@ if next(ready_queue_id_list) ~= nil then
    -- get the payload for this job
    local payload = redis.call('HGET', prefix .. ':payload', queue_type .. ':' .. ready_queue_id .. ':' .. job_id)
    -- update the time keeper with the current dequeue time.
-   local interval = redis.call('HGET', prefix .. ':interval', queue_type .. ':' .. ready_queue_id)
    redis.call('PSETEX', prefix .. ':' .. queue_type .. ':' .. ready_queue_id .. ':time', job_expiry_interval, current_timestamp)
    -- check if there are any more jobs of this queue in the job queue.
    if redis.call('LLEN', prefix .. ':' .. queue_type .. ':' .. ready_queue_id) == 0 then
@@ -41,7 +40,11 @@ if next(ready_queue_id_list) ~= nil then
    else
       -- there are more jobs in the queue. update the next
       -- dequeue time for this queue in the ready sorted set.
-      local next_dequeue_time = current_timestamp + interval
+      local next_dequeue_time = current_timestamp
+      local interval = tonumber(redis.call('HGET', prefix .. ':interval', queue_type .. ':' .. ready_queue_id))
+      if interval then
+	 next_dequeue_time = current_timestamp + interval
+      end
       redis.call('ZADD', prefix .. ':' .. queue_type, next_dequeue_time, ready_queue_id)
    end
    local job_expiry_time = current_timestamp + job_expiry_interval
