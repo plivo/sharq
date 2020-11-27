@@ -204,8 +204,9 @@ class SharQ(object):
             timestamp,
             self._job_expire_interval
         ]
-
+        print("PY2SHARQ::Dequeueing with keys and args", keys, args)
         dequeue_response = self._lua_dequeue(keys=keys, args=args)
+        print("PY2SHARQ::Dequeued with response", dequeue_response)
 
         if len(dequeue_response) < 4:
             response = {
@@ -215,6 +216,7 @@ class SharQ(object):
 
         queue_id, job_id, payload, requeues_remaining = dequeue_response
         payload = deserialize_payload(payload[1:-1])
+        print("PY2SHARQ::Dequeued deserialzed payload", payload)
 
         response = {
             'status': 'success',
@@ -223,6 +225,7 @@ class SharQ(object):
             'payload': payload,
             'requeues_remaining': int(requeues_remaining)
         }
+        print("PY2SHARQ::Dequeued final response", response)
 
         return response
 
