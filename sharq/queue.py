@@ -179,9 +179,7 @@ class SharQ(object):
             interval,
             requeue_limit
         ]
-        print("SHARQLOGS::Enqueuing with keys", keys, "and args", args)
         self._lua_enqueue(keys=keys, args=args)
-        print("SHARQLOGS::Enqueued with keys", keys, "and args", args)
 
         response = {
             'status': 'queued'
@@ -207,7 +205,6 @@ class SharQ(object):
             self._job_expire_interval
         ]
 
-        print("SHARQLOGS::Dequeuing with keys", keys, "and args", args)
         dequeue_response = self._lua_dequeue(keys=keys, args=args)
 
         if len(dequeue_response) < 4:
@@ -217,10 +214,7 @@ class SharQ(object):
             return response
 
         queue_id, job_id, payload, requeues_remaining = dequeue_response
-        print("SHARQLOGS::Dequeuing from redis", queue_id, job_id, payload, requeues_remaining)
-        print("SHARQLOGS::Deserializing payload")
         payload = deserialize_payload(payload)
-        print("SHARQLOGS::Deserialized payload")
 
         response = {
             'status': 'success',
@@ -229,8 +223,6 @@ class SharQ(object):
             'payload': payload,
             'requeues_remaining': int(requeues_remaining)
         }
-
-        print("SHARQLOGS::Dequeued with response", response)
 
         return response
 
@@ -262,15 +254,12 @@ class SharQ(object):
             'status': 'success'
         }
 
-        print("SHARQLOGS::Finish with keys", keys, "and args", args)
-
         finish_response = self._lua_finish(keys=keys, args=args)
         if finish_response == 0:
             # the finish failed.
             response.update({
                 'status': 'failure'
             })
-        print("SHARQLOGS::Finished with response", response)
         return response
 
     def interval(self, interval, queue_id, queue_type='default'):
@@ -298,7 +287,6 @@ class SharQ(object):
         args = [
             interval
         ]
-        print("SHARQLOGS::Interval with keys", keys, "and args", args)
         interval_response = self._lua_interval(keys=keys, args=args)
         if interval_response == 0:
             # the queue with the id and type does not exist.
@@ -309,7 +297,6 @@ class SharQ(object):
             response = {
                 'status': 'success'
             }
-        print("SHARQLOGS::Interval with response", response)
 
         return response
 
@@ -364,7 +351,6 @@ class SharQ(object):
         response = {
             'status': 'failure'
         }
-        print("SHARQLOGS::Metrics queue_type and queue_id", queue_type, queue_id)
         if not queue_type and not queue_id:
             # return global stats.
             # list of active queue types (ready + active)
@@ -382,7 +368,6 @@ class SharQ(object):
             args = [
                 timestamp
             ]
-            print("SHARQLOGS::Metrics with keys", keys, "and args", args)
             enqueue_details, dequeue_details = self._lua_metrics(
                 keys=keys, args=args)
 
@@ -401,7 +386,6 @@ class SharQ(object):
                 'enqueue_counts': enqueue_counts,
                 'dequeue_counts': dequeue_counts
             })
-            print("SHARQLOGS::Metrics with response", response)
             return response
         elif queue_type and not queue_id:
             # return list of queue_ids.
@@ -418,7 +402,6 @@ class SharQ(object):
                 'status': 'success',
                 'queue_ids': queue_list
             })
-            print("SHARQLOGS::Metrics with response", response)
             return response
         elif queue_type and queue_id:
             # return specific details.
@@ -435,7 +418,6 @@ class SharQ(object):
             args = [
                 timestamp
             ]
-            print("SHARQLOGS::Metrics with keys", keys, "and args", args)
             enqueue_details, dequeue_details = self._lua_metrics(
                 keys=keys, args=args)
 
@@ -458,7 +440,6 @@ class SharQ(object):
                 'enqueue_counts': enqueue_counts,
                 'dequeue_counts': dequeue_counts
             })
-            print("SHARQLOGS::Metrics with response", response)
             return response
         elif not queue_type and queue_id:
             raise BadArgumentException(
