@@ -18,7 +18,7 @@ def is_valid_identifier(identifier):
         - _ (underscore)
         - - (hypen)
     """
-    if not isinstance(identifier, basestring):
+    if not isinstance(identifier, str):
         return False
 
     if len(identifier) > 100 or len(identifier) < 1:
@@ -32,7 +32,7 @@ def is_valid_interval(interval):
     """Checks if the given interval is valid. A valid interval
     is always a positive, non-zero integer value.
     """
-    if not isinstance(interval, (int, long)):
+    if not isinstance(interval, int):
         return False
 
     if interval <= 0:
@@ -46,7 +46,7 @@ def is_valid_requeue_limit(requeue_limit):
     A valid requeue limit is always greater than
     or equal to -1.
     """
-    if not isinstance(requeue_limit, (int, long)):
+    if not isinstance(requeue_limit, int):
         return False
 
     if requeue_limit <= -2:
@@ -59,16 +59,28 @@ def serialize_payload(payload):
     """Tries to serialize the payload using msgpack. If it is
     not serializable, raises a TypeError.
     """
-    return msgpack.packb(payload)
+    return msgpack.packb(payload, use_bin_type=True)
 
 
 def deserialize_payload(payload):
     """Tries to deserialize the payload using msgpack.
     """
-    return msgpack.unpackb(payload)
+    return msgpack.unpackb(payload, raw=False)
 
 
 def generate_epoch():
     """Generates an unix epoch in ms.
     """
     return int(time.time() * 1000)
+
+
+def convert_to_str(queue_set):
+    """Takes set and decodes bytes to string"""
+    queue_list = []
+    for queue in list(queue_set):
+        try:
+            queue_list.append(queue.decode('utf-8'))
+        except Exception as e:
+            queue_list.append(queue)
+            pass
+    return queue_list

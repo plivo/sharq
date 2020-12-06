@@ -3,12 +3,13 @@
 import os
 import sys
 import signal
-import ConfigParser
+import configparser
 import redis
 from rediscluster import RedisCluster as StrictRedisCluster
 from sharq.utils import (is_valid_identifier, is_valid_interval,
                          is_valid_requeue_limit, generate_epoch,
-                         serialize_payload, deserialize_payload)
+                         serialize_payload, deserialize_payload,
+                         convert_to_str)
 from sharq.exceptions import SharqException, BadArgumentException
 
 
@@ -53,12 +54,12 @@ class SharQ(object):
                 unix_socket_path=self._config.get('redis', 'unix_socket_path')
             )
         elif redis_connection_type == 'tcp_sock':
-            isclustered = False    
+            isclustered = False
             if self._config.has_option('redis', 'clustered'):
                 isclustered = self._config.getboolean('redis', 'clustered')
-                
+
             if isclustered:
-                startup_nodes = [{"host":self._config.get('redis', 'host'), "port":self._config.get('redis', 'port')}]
+                startup_nodes = [{"host": self._config.get('redis', 'host'), "port": self._config.get('redis', 'port')}]
                 self._r = StrictRedisCluster(startup_nodes=startup_nodes, decode_responses=False,
                                              skip_full_coverage_check=True, socket_timeout=5)
             else:
@@ -71,7 +72,7 @@ class SharQ(object):
 
     def _load_config(self):
         """Read the configuration file and load it into memory."""
-        self._config = ConfigParser.SafeConfigParser()
+        self._config = configparser.SafeConfigParser()
         self._config.read(self.config_path)
 
     def reload_config(self, config_path=None):
@@ -174,11 +175,10 @@ class SharQ(object):
             timestamp,
             queue_id,
             job_id,
-            '"%s"' % serialized_payload,
+            serialized_payload,
             interval,
             requeue_limit
         ]
-
         self._lua_enqueue(keys=keys, args=args)
 
         response = {
@@ -214,12 +214,12 @@ class SharQ(object):
             return response
 
         queue_id, job_id, payload, requeues_remaining = dequeue_response
-        payload = deserialize_payload(payload[1:-1])
+        payload = deserialize_payload(payload)
 
         response = {
             'status': 'success',
-            'queue_id': queue_id,
-            'job_id': job_id,
+            'queue_id': queue_id.decode('utf-8'),
+            'job_id': job_id.decode('utf-8'),
             'payload': payload,
             'requeues_remaining': int(requeues_remaining)
         }
@@ -260,7 +260,6 @@ class SharQ(object):
             response.update({
                 'status': 'failure'
             })
-
         return response
 
     def interval(self, interval, queue_id, queue_type='default'):
@@ -327,7 +326,7 @@ class SharQ(object):
             job_discard_list = self._lua_requeue(keys=keys, args=args)
             # discard the jobs if any
             for job in job_discard_list:
-                queue_id, job_id = job.split(':')
+                queue_id, job_id = job.decode('utf-8').split(':')
                 # explicitly finishing a job
                 # is nothing but discard.
                 self.finish(
@@ -360,6 +359,7 @@ class SharQ(object):
             ready_queue_types = self._r.smembers(
                 '%s:ready:queue_type' % self._key_prefix)
             all_queue_types = active_queue_types | ready_queue_types
+            queue_types = convert_to_str(all_queue_types)
             # global rates for past 10 minutes
             timestamp = str(generate_epoch())
             keys = [
@@ -368,14 +368,13 @@ class SharQ(object):
             args = [
                 timestamp
             ]
-
             enqueue_details, dequeue_details = self._lua_metrics(
                 keys=keys, args=args)
 
             enqueue_counts = {}
             dequeue_counts = {}
             # the length of enqueue & dequeue details are always same.
-            for i in xrange(0, len(enqueue_details), 2):
+            for i in range(0, len(enqueue_details), 2):
                 enqueue_counts[str(enqueue_details[i])] = int(
                     enqueue_details[i + 1] or 0)
                 dequeue_counts[str(dequeue_details[i])] = int(
@@ -383,7 +382,7 @@ class SharQ(object):
 
             response.update({
                 'status': 'success',
-                'queue_types': list(all_queue_types),
+                'queue_types': queue_types,
                 'enqueue_counts': enqueue_counts,
                 'dequeue_counts': dequeue_counts
             })
@@ -396,11 +395,12 @@ class SharQ(object):
             pipe.zrange('%s:%s:active' % (self._key_prefix, queue_type), 0, -1)
             ready_queues, active_queues = pipe.execute()
             # extract the queue_ids from the queue_id:job_id string
-            active_queues = [i.split(':')[0] for i in active_queues]
+            active_queues = [i.decode('utf-8').split(':')[0] for i in active_queues]
             all_queue_set = set(ready_queues) | set(active_queues)
+            queue_list = convert_to_str(all_queue_set)
             response.update({
                 'status': 'success',
-                'queue_ids': list(all_queue_set)
+                'queue_ids': queue_list
             })
             return response
         elif queue_type and queue_id:
@@ -418,14 +418,13 @@ class SharQ(object):
             args = [
                 timestamp
             ]
-
             enqueue_details, dequeue_details = self._lua_metrics(
                 keys=keys, args=args)
 
             enqueue_counts = {}
             dequeue_counts = {}
             # the length of enqueue & dequeue details are always same.
-            for i in xrange(0, len(enqueue_details), 2):
+            for i in range(0, len(enqueue_details), 2):
                 enqueue_counts[str(enqueue_details[i])] = int(
                     enqueue_details[i + 1] or 0)
                 dequeue_counts[str(dequeue_details[i])] = int(
@@ -453,8 +452,8 @@ class SharQ(object):
         To check the availability of redis. If redis is down get will throw exception
         :return: value or None
         """
-        return self._r.get('sharq:deep_status:{}'.format(self._key_prefix))
-    
+        return self._r.set('sharq:deep_status:{}'.format(self._key_prefix), 'sharq_deep_status')
+
     def clear_queue(self, queue_type=None, queue_id=None, purge_all=False):
         """clear the all entries in queue with particular queue_id
         and queue_type. It takes an optional argument, 
@@ -470,13 +469,13 @@ class SharQ(object):
         response = {
             'status': 'Failure',
             'message': 'No queued calls found'
-            }
+        }
         # remove from the primary sorted set
         primary_set = '{}:{}'.format(self._key_prefix, queue_type)
         queued_status = self._r.zrem(primary_set, queue_id)
         if queued_status:
-            response.update({'status': 'Success', 
-                    'message': 'Successfully removed all queued calls'})
+            response.update({'status': 'Success',
+                             'message': 'Successfully removed all queued calls'})
         # do a full cleanup of reources
         # although this is not necessary as we don't remove resources 
         # while dequeue operation
@@ -498,8 +497,8 @@ class SharQ(object):
             # clear job_queue_list
             pipe.delete(job_queue_list)
             pipe.execute()
-            response.update({'status': 'Success', 
-                    'message': 'Successfully removed all queued calls and purged related resources'})
+            response.update({'status': 'Success',
+                             'message': 'Successfully removed all queued calls and purged related resources'})
         else:
             # always delete the job queue list
             self._r.delete(job_queue_list)

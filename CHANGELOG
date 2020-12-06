@@ -1,3 +1,6 @@
+MAJOR RELEASE v1.0.0
+	- Upgrade python version to 3.6
+
 MINOR RELEASE v0.5.3
 	- Upgrade redis cluster dependency
 
