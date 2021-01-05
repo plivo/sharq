@@ -7,7 +7,7 @@ setup(
     version='1.0.0',
     url='https://github.com/plivo/sharq',
     author='Plivo Team',
-    author_email='hello@plivo.com',
+    author_email='voice-team@plivo.com',
     packages=['sharq'],
     package_data={
         'sharq': ['scripts/lua/*.lua']
@@ -20,7 +20,8 @@ setup(
         'msgpack==0.5.6',
         'redis-py-cluster==2.0.0'
     ],
-    classifiers = [
+    python_requires='>3.5',
+    classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
