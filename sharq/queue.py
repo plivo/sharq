@@ -315,6 +315,9 @@ class SharQ(object):
             '%s:active:queue_type' % self._key_prefix)
         for queue_type in active_queue_type_list:
             # requeue all expired jobs in all queue types.
+
+            queue_type = queue_type.decode('utf-8')
+
             keys = [
                 self._key_prefix,
                 queue_type
