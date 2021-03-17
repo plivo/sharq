@@ -75,6 +75,9 @@ class SharQ(object):
         self._config = configparser.SafeConfigParser()
         self._config.read(self.config_path)
 
+    def redis_client(self):
+        return self._r
+
     def reload_config(self, config_path=None):
         """Reload the configuration from the new config file if provided
         else reload the current config file.
