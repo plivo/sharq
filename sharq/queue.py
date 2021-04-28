@@ -217,6 +217,13 @@ class SharQ(object):
             return response
 
         queue_id, job_id, payload, requeues_remaining = dequeue_response
+
+        if payload is None:
+            response = {
+                'status': 'failure'
+            }
+            return response
+
         payload = deserialize_payload(payload)
 
         response = {
