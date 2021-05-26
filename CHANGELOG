@@ -1,3 +1,6 @@
+MINOR RELEASE v1.1.0
+	- Handle known races in requeue logic.
+
 MAJOR RELEASE v1.0.0
 	- Upgrade python version to 3.6
 

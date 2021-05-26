@@ -75,6 +75,9 @@ class SharQ(object):
         self._config = configparser.SafeConfigParser()
         self._config.read(self.config_path)
 
+    def redis_client(self):
+        return self._r
+
     def reload_config(self, config_path=None):
         """Reload the configuration from the new config file if provided
         else reload the current config file.
@@ -214,6 +217,13 @@ class SharQ(object):
             return response
 
         queue_id, job_id, payload, requeues_remaining = dequeue_response
+
+        if payload is None:
+            response = {
+                'status': 'failure'
+            }
+            return response
+
         payload = deserialize_payload(payload)
 
         response = {
@@ -315,6 +325,9 @@ class SharQ(object):
             '%s:active:queue_type' % self._key_prefix)
         for queue_type in active_queue_type_list:
             # requeue all expired jobs in all queue types.
+
+            queue_type = queue_type.decode('utf-8')
+
             keys = [
                 self._key_prefix,
                 queue_type
