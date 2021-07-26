@@ -66,7 +66,8 @@ class SharQ(object):
                 self._r = redis.StrictRedis(
                     db=db,
                     host=self._config.get('redis', 'host'),
-                    port=self._config.get('redis', 'port')
+                    port=self._config.get('redis', 'port'),
+                    password=self._config.get('redis', 'password')
                 )
         self._load_lua_scripts()
 
