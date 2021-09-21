@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='SharQ',
-    version='1.1.0',
+    version='1.1.1',
     url='https://github.com/plivo/sharq',
     author='Plivo Team',
     author_email='voice-team@plivo.com',
