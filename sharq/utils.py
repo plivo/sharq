@@ -35,7 +35,7 @@ def is_valid_interval(interval):
     if not isinstance(interval, int):
         return False
 
-    if interval <= 0:
+    if interval < 0:
         return False
 
     return True
