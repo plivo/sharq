@@ -171,7 +171,7 @@ class SharQ(object):
         timestamp = str(generate_epoch())
 
         keys = [
-            self._key_prefix,
+            queue_type,
             queue_type
         ]
 
