@@ -517,3 +517,4 @@ class SharQ(object):
             # always delete the job queue list
             self._r.delete(job_queue_list)
         return response
+
