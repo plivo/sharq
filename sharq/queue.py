@@ -541,6 +541,6 @@ class SharQ(object):
 
         print("current_queue_length :: ", current_queue_length)
         if current_queue_length <= max_queued_length:
-            return True
+            return False, current_queue_length
         else:
-            return False
+            return False, current_queue_length
