@@ -135,6 +135,11 @@ class SharQ(object):
             self._lua_metrics = self._r.register_script(
                 self._lua_metrics_script)
 
+        with open(os.path.join(
+                lua_script_path,
+                'queuelength.lua'), 'r') as queuelength_file:
+            self._lua_queuelength_script = queuelength_file.read()
+
     def reload_lua_scripts(self):
         """Lets user reload the lua scripts in run time."""
         self._load_lua_scripts()
@@ -517,3 +522,25 @@ class SharQ(object):
             # always delete the job queue list
             self._r.delete(job_queue_list)
         return response
+
+    def get_queue_length(self, queue_type, queue_id, max_queued_length):
+        """
+        Return the current length present in redis key of type list
+        Redis key structure : key_prefix : queue_type : queue_id
+        """
+
+        # validate all the input
+        if not is_valid_identifier(queue_type):
+            raise BadArgumentException('`queue_type` has an invalid value.')
+
+        if not is_valid_identifier(queue_id):
+            raise BadArgumentException('`queue_id` has an invalid value.')
+
+        current_queue_length = self._r.eval(self._lua_queuelength_script, 3,
+                                            self._key_prefix, queue_type, queue_id)
+
+        print("current_queue_length :: ", current_queue_length)
+        if current_queue_length <= max_queued_length:
+            return True
+        else:
+            return False
