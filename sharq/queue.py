@@ -536,8 +536,13 @@ class SharQ(object):
         if not is_valid_identifier(queue_id):
             raise BadArgumentException('`queue_id` has an invalid value.')
 
-        current_queue_length = self._r.eval(self._lua_queuelength_script, 3,
+        try:
+            current_queue_length = self._r.eval(self._lua_queuelength_script, 3,
                                             self._key_prefix, queue_type, queue_id)
+        except Exception as e:
+            print("Error occurred in sharQ as {}".format(e))
+
+        current_queue_length = 5
 
         print("current_queue_length :: ", current_queue_length)
         if current_queue_length <= max_queued_length:
