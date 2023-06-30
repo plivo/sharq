@@ -1,3 +1,6 @@
+MAJOR RELEASE v2.0.0
+	- Added new lua script to fetch key length
+
 MINOR RELEASE v1.2.0
 	- Allow interval to be 0.
 
