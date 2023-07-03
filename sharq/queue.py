@@ -539,13 +539,18 @@ class SharQ(object):
         if not is_valid_identifier(queue_id):
             raise BadArgumentException('`queue_id` has an invalid value.')
 
-        keys = [
-            self._key_prefix,
-            queue_type,
-            queue_id
-        ]
+        # keys = [
+        #     self._key_prefix,
+        #     queue_type,
+        #     queue_id
+        # ]
 
+        redis_key = '{{{}}}:{}:{}'.format(self._key_prefix, queue_type, queue_id)
+        keys = [
+            redis_key
+        ]
         try:
+            print("REDIS KEY ----->>>>", redis_key)
             current_queue_length = self._lua_queuelength(keys=keys)
             print("current_queue_length ----->", current_queue_length)
         except Exception as e:

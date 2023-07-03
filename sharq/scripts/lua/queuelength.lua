@@ -8,11 +8,13 @@
 --     The current length of the Redis key
 
 local prefix = KEYS[1]
-local queue_type = KEYS[2]
-local queue_id = KEYS[3]
+-- local queue_type = KEYS[2]
+-- local queue_id = KEYS[3]
 
-local key = prefix .. ':' .. queue_type .. ':' .. queue_id
+-- local key = prefix .. ':' .. queue_type .. ':' .. queue_id
 
-local length = redis.call('LLEN', key)
+-- local redis_key = prefix
+
+local length = redis.call('LLEN', prefix)
 
 return length
