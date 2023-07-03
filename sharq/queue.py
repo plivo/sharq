@@ -539,27 +539,21 @@ class SharQ(object):
         if not is_valid_identifier(queue_id):
             raise BadArgumentException('`queue_id` has an invalid value.')
 
-        # keys = [
-        #     self._key_prefix,
-        #     queue_type,
-        #     queue_id
-        # ]
-
-        redis_key = self._key_prefix + ':' + queue_type + ':' + queue_id
-        keys = [
-            redis_key
-        ]
         try:
-            print("REDIS KEY ----->>>>", redis_key)
+            redis_key = self._key_prefix + ':' + queue_type + ':' + queue_id
+            keys = [
+                redis_key
+            ]
             current_queue_length = self._lua_queuelength(keys=keys)
-            print("current_queue_length ----->", current_queue_length)
+            if current_queue_length <= max_queued_length:
+                return True
+            else:
+                print("Maximum queue length is reached for auth_id : {}".format(queue_id))
+                return False
         except Exception as e:
-            print("Error occurred in sharQ as {}".format(e))
-
-        current_queue_length = 5
-
-        print("current_queue_length :: ", current_queue_length)
-        if current_queue_length <= max_queued_length:
-            return False, current_queue_length
-        else:
-            return False, current_queue_length
+            """
+            Not failing request if any exception occurs in redis,
+            user can queue the call in this case.
+            """
+            print("Error occurred while fetching redis key length as {} auth_id {}".format(e, queue_id))
+            return True
