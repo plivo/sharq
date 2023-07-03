@@ -547,7 +547,7 @@ class SharQ(object):
 
         try:
             current_queue_length = self._lua_queuelength(keys=keys)
-            print('current_queue_length ----->', current_queue_length)
+            print("current_queue_length ----->", current_queue_length)
         except Exception as e:
             print("Error occurred in sharQ as {}".format(e))
 
