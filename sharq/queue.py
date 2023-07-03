@@ -139,6 +139,9 @@ class SharQ(object):
                 lua_script_path,
                 'queuelength.lua'), 'r') as queuelength_file:
             self._lua_queuelength_script = queuelength_file.read()
+            self._lua_queuelength = self._r.register_script(
+                self._lua_queuelength_script)
+
 
     def reload_lua_scripts(self):
         """Lets user reload the lua scripts in run time."""
@@ -536,9 +539,15 @@ class SharQ(object):
         if not is_valid_identifier(queue_id):
             raise BadArgumentException('`queue_id` has an invalid value.')
 
+        keys = [
+            self._key_prefix,
+            queue_type,
+            queue_id
+        ]
+
         try:
-            current_queue_length = self._r.eval(self._lua_queuelength_script, 3,
-                                            self._key_prefix, queue_type, queue_id)
+            current_queue_length = self._lua_queuelength(keys=keys)
+            print('current_queue_length ----->', current_queue_length)
         except Exception as e:
             print("Error occurred in sharQ as {}".format(e))
 
