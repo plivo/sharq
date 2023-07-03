@@ -546,7 +546,7 @@ class SharQ(object):
             ]
             current_queue_length = self._lua_queuelength(keys=keys)
             if current_queue_length <= max_queued_length:
-                return True
+                return False
             else:
                 print("Maximum queue length is reached for auth_id : {}".format(queue_id))
                 return False
@@ -556,4 +556,4 @@ class SharQ(object):
             user can queue the call in this case.
             """
             print("Error occurred while fetching redis key length as {} auth_id {}".format(e, queue_id))
-            return True
+            return False
