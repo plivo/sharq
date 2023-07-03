@@ -545,7 +545,7 @@ class SharQ(object):
         #     queue_id
         # ]
 
-        redis_key = '{{{}}}:{}:{}'.format(self._key_prefix, queue_type, queue_id)
+        redis_key = '{' + self._key_prefix + '}' + ':' + queue_type + ':' + queue_id
         keys = [
             redis_key
         ]
