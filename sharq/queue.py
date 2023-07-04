@@ -540,9 +540,11 @@ class SharQ(object):
             raise BadArgumentException('`queue_id` has an invalid value.')
 
         try:
-            redis_key = self._key_prefix + ':' + queue_type + ':' + queue_id
+            # redis_key = self._key_prefix + ':' + queue_type + ':' + queue_id
             keys = [
-                redis_key
+                self._key_prefix,
+                queue_type,
+                queue_id
             ]
             current_queue_length = self._lua_queuelength(keys=keys)
             if current_queue_length < max_queued_length:
