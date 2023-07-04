@@ -526,7 +526,7 @@ class SharQ(object):
             self._r.delete(job_queue_list)
         return response
 
-    def get_queue_length(self, queue_type, queue_id, max_queued_length):
+    def get_queue_length(self, queue_type, queue_id):
         """
         Return the current length present in redis key of type list
         Redis key structure : key_prefix : queue_type : queue_id
@@ -539,21 +539,10 @@ class SharQ(object):
         if not is_valid_identifier(queue_id):
             raise BadArgumentException('`queue_id` has an invalid value.')
 
-        try:
-            redis_key = self._key_prefix + ':' + queue_type + ':' + queue_id
-            keys = [
-                redis_key
-            ]
-            current_queue_length = self._lua_queuelength(keys=keys)
-            if current_queue_length < max_queued_length:
-                return True
-            else:
-                print("Maximum queue length is reached for auth_id : {}".format(queue_id))
-                return False
-        except Exception as e:
-            """
-            Not failing request if any exception occurs in redis,
-            user can queue the call in this case.
-            """
-            print("Error occurred while fetching redis key length as {} auth_id {}".format(e, queue_id))
-            return True
+        redis_key = self._key_prefix + ':' + queue_type + ':' + queue_id
+        keys = [
+            redis_key
+        ]
+        current_queue_length = self._lua_queuelength(keys=keys)
+        return current_queue_length
+
