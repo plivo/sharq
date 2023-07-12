@@ -135,14 +135,6 @@ class SharQ(object):
             self._lua_metrics = self._r.register_script(
                 self._lua_metrics_script)
 
-        with open(os.path.join(
-                lua_script_path,
-                'queuelength.lua'), 'r') as queuelength_file:
-            self._lua_queuelength_script = queuelength_file.read()
-            self._lua_queuelength = self._r.register_script(
-                self._lua_queuelength_script)
-
-
     def reload_lua_scripts(self):
         """Lets user reload the lua scripts in run time."""
         self._load_lua_scripts()
@@ -540,9 +532,7 @@ class SharQ(object):
             raise BadArgumentException('`queue_id` has an invalid value.')
 
         redis_key = self._key_prefix + ':' + queue_type + ':' + queue_id
-        keys = [
-            redis_key
-        ]
-        current_queue_length = self._lua_queuelength(keys=keys)
+        current_queue_length = self._r.llen(redis_key)
+        print("get_queue_length :: ", current_queue_length)
         return current_queue_length
 
