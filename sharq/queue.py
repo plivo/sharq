@@ -533,6 +533,5 @@ class SharQ(object):
 
         redis_key = self._key_prefix + ':' + queue_type + ':' + queue_id
         current_queue_length = self._r.llen(redis_key)
-        print("get_queue_length :: ", current_queue_length)
         return current_queue_length
 
