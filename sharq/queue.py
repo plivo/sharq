@@ -517,3 +517,21 @@ class SharQ(object):
             # always delete the job queue list
             self._r.delete(job_queue_list)
         return response
+
+    def get_queue_length(self, queue_type, queue_id):
+        """
+        Return the current length present in redis key of type list
+        Redis key structure : key_prefix : queue_type : queue_id
+        """
+
+        # validate all the input
+        if not is_valid_identifier(queue_type):
+            raise BadArgumentException('`queue_type` has an invalid value.')
+
+        if not is_valid_identifier(queue_id):
+            raise BadArgumentException('`queue_id` has an invalid value.')
+
+        redis_key = self._key_prefix + ':' + queue_type + ':' + queue_id
+        current_queue_length = self._r.llen(redis_key)
+        return current_queue_length
+
