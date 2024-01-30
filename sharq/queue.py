@@ -460,7 +460,12 @@ class SharQ(object):
                 '`queue_id` should be accompanied by `queue_type`.')
 
         return response
-
+    def worker_health_status(self, key):
+        """
+        To check the availability of worker health. If worker not running health check will fail
+        :return: value or None
+        """
+        return self._r.get(key)
     def deep_status(self):
         """
         To check the availability of redis. If redis is down get will throw exception
