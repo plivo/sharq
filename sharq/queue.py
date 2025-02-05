@@ -157,6 +157,8 @@ class SharQ(object):
         if not is_valid_identifier(queue_type):
             raise BadArgumentException('`queue_type` has an invalid value.')
 
+        self._key_prefix = queue_type # updating prefix to be equal to queue type
+
         if requeue_limit is None:
             requeue_limit = self._default_job_requeue_limit
 
@@ -197,6 +199,8 @@ class SharQ(object):
         """
         if not is_valid_identifier(queue_type):
             raise BadArgumentException('`queue_type` has an invalid value.')
+        
+        self._key_prefix = queue_type # updating prefix to be equal to queue type
 
         timestamp = str(generate_epoch())
 
@@ -250,6 +254,8 @@ class SharQ(object):
 
         if not is_valid_identifier(queue_type):
             raise BadArgumentException('`queue_type` has an invalid value.')
+        
+        self._key_prefix = queue_type # updating prefix to be equal to queue type
 
         keys = [
             self._key_prefix,
@@ -328,6 +334,8 @@ class SharQ(object):
             # requeue all expired jobs in all queue types.
 
             queue_type = queue_type.decode('utf-8')
+            
+            self._key_prefix = queue_type # updating prefix to be equal to queue type
 
             keys = [
                 self._key_prefix,

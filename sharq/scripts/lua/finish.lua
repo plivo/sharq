@@ -9,7 +9,7 @@
 -- output:
 --     nil
 
-local prefix = "messaging"
+local prefix = KEYS[1]
 local queue_type = KEYS[2]
 local queue_id = ARGV[1]
 local job_id = ARGV[2]

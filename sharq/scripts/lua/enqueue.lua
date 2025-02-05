@@ -13,7 +13,7 @@
 -- output:
 --     nil
 
-local prefix = "messaging"
+local prefix = KEYS[1]
 local queue_type = KEYS[2]
 
 local current_timestamp = ARGV[1]

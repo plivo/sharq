@@ -10,7 +10,7 @@
 --     { queue_id, job_id, payload, requeues_remaining }
 
 
-local prefix = "messaging"
+local prefix = KEYS[1]
 local queue_type = KEYS[2]
 
 local current_timestamp = ARGV[1]

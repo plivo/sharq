@@ -9,7 +9,7 @@
 -- output:
 --     {} or job_discard_list
 
-local prefix = "messaging"
+local prefix = KEYS[1]
 local queue_type = KEYS[2]
 local current_timestamp = ARGV[1]
 
