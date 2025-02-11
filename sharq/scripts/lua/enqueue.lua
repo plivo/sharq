@@ -1,8 +1,7 @@
 -- script to enqueue a job into sharq.
 
 -- input:
---     KEYS[1] - <key_prefix>
---     KEYS[2] - <queue_type>
+--     KEYS[1] - <queue_type>
 --
 --     ARGV[1] - <current_timestamp>
 --     ARGV[2] - <queue_id>
@@ -10,11 +9,11 @@
 --     ARGV[4] - <serialized_payload>
 --     ARGV[5] - <interval>
 --     ARGV[6] - <requeue_limit>
+--     ARGV[7] - <key_prefix>
 -- output:
 --     nil
 
-local prefix = KEYS[1]
-local queue_type = KEYS[2]
+local queue_type = KEYS[1]
 
 local current_timestamp = ARGV[1]
 local queue_id = ARGV[2]
@@ -22,6 +21,7 @@ local job_id = ARGV[3]
 local payload = ARGV[4]
 local interval = ARGV[5]
 local requeue_limit = ARGV[6]
+local prefix = ARGV[7]
 
 -- push the job id into the job queue.
 redis.call('RPUSH', prefix .. ':' .. queue_type .. ':' .. queue_id, job_id)

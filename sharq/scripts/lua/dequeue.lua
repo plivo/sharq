@@ -1,20 +1,20 @@
 -- script to dequeue a job from sharq.
 
 -- input:
---     KEYS[1] - <key_prefix>
---     KEYS[2] - <queue_type>
+--     KEYS[1] - <queue_type>
 --
 --     ARGV[1] - <current_timestamp>
 --     ARGV[2] - <job_expiry_interval>
+--     ARGV[3] - <key_prefix>
 -- output:
 --     { queue_id, job_id, payload, requeues_remaining }
 
 
-local prefix = KEYS[1]
-local queue_type = KEYS[2]
+local queue_type = KEYS[1]
 
 local current_timestamp = ARGV[1]
 local job_expiry_interval = ARGV[2]
+local prefix = ARGV[3]
 
 
 local ready_queue_id_list = redis.call('ZRANGEBYSCORE', prefix .. ':' .. queue_type, 0, current_timestamp)

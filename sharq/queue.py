@@ -157,8 +157,6 @@ class SharQ(object):
         if not is_valid_identifier(queue_type):
             raise BadArgumentException('`queue_type` has an invalid value.')
 
-        self._key_prefix = queue_type # updating prefix to be equal to queue type
-
         if requeue_limit is None:
             requeue_limit = self._default_job_requeue_limit
 
@@ -173,7 +171,6 @@ class SharQ(object):
         timestamp = str(generate_epoch())
 
         keys = [
-            self._key_prefix,
             queue_type
         ]
 
@@ -183,7 +180,8 @@ class SharQ(object):
             job_id,
             serialized_payload,
             interval,
-            requeue_limit
+            requeue_limit,
+            self._key_prefix
         ]
         self._lua_enqueue(keys=keys, args=args)
 
@@ -199,18 +197,17 @@ class SharQ(object):
         """
         if not is_valid_identifier(queue_type):
             raise BadArgumentException('`queue_type` has an invalid value.')
-        
-        self._key_prefix = queue_type # updating prefix to be equal to queue type
 
         timestamp = str(generate_epoch())
 
         keys = [
-            self._key_prefix,
             queue_type
+            
         ]
         args = [
             timestamp,
-            self._job_expire_interval
+            self._job_expire_interval,
+            self._key_prefix
         ]
 
         dequeue_response = self._lua_dequeue(keys=keys, args=args)
@@ -254,17 +251,15 @@ class SharQ(object):
 
         if not is_valid_identifier(queue_type):
             raise BadArgumentException('`queue_type` has an invalid value.')
-        
-        self._key_prefix = queue_type # updating prefix to be equal to queue type
 
         keys = [
-            self._key_prefix,
             queue_type
         ]
 
         args = [
             queue_id,
-            job_id
+            job_id,
+            self._key_prefix
         ]
 
         response = {
@@ -334,16 +329,14 @@ class SharQ(object):
             # requeue all expired jobs in all queue types.
 
             queue_type = queue_type.decode('utf-8')
-            
-            self._key_prefix = queue_type # updating prefix to be equal to queue type
 
             keys = [
-                self._key_prefix,
                 queue_type
             ]
 
             args = [
-                timestamp
+                timestamp,
+                self._key_prefix
             ]
             job_discard_list = self._lua_requeue(keys=keys, args=args)
             # discard the jobs if any

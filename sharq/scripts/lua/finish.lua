@@ -1,18 +1,18 @@
 -- script to mark a job as completed (finished) successfully.
 
 -- input:
---     KEYS[1] - <key_prefix>
---     KEYS[2] - <queue_type>
+--     KEYS[1] - <queue_type>
 --
 --     ARGV[1] - <queue_id>
---     ARGV[2] - <job_id>
+--     ARGV[2] - <job_id>  
+--     ARGV[3] - <key_prefix>  
 -- output:
 --     nil
 
-local prefix = KEYS[1]
-local queue_type = KEYS[2]
+local queue_type = KEYS[1]
 local queue_id = ARGV[1]
 local job_id = ARGV[2]
+local prefix = ARGV[3]
 
 
 -- remove the job from active sorted set.

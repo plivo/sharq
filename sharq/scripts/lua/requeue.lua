@@ -1,17 +1,17 @@
 -- script to requeue expired jobs.
 
 -- input:
---     KEYS[1] - <key_prefix>
---     KEYS[2] - <queue_type>
+--     KEYS[1] - <queue_type>
 --
 --     ARGV[1] - <current_timestamp>
+--     ARGV[2] - <key_prefix>
 --
 -- output:
 --     {} or job_discard_list
 
-local prefix = KEYS[1]
-local queue_type = KEYS[2]
+local queue_type = KEYS[1]
 local current_timestamp = ARGV[1]
+local prefix = ARGV[2]
 
 -- check if any of the jobs need to be retried
 local requeue_job_list = redis.call('ZRANGEBYSCORE', prefix .. ':' .. queue_type .. ':active', 0, current_timestamp)
